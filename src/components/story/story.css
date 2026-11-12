@@ -279,6 +279,24 @@
   fill: #dfe7ea;
 }
 
+/* The orbiting satellite turns about its horizontal axis: each view folds about its own centre. */
+.story svg .st-sat-side,
+.story svg .st-sat-front {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+}
+
+.st-sat-front-ring {
+  fill: #0b1d26;
+  stroke: #6cb8f0;
+  stroke-width: 2.5;
+}
+
+.st-sat-glint {
+  fill: #ffffff;
+  opacity: 0.6;
+}
+
 .st-sat-lens {
   fill: #0b1d26;
   stroke: var(--st-ocean);

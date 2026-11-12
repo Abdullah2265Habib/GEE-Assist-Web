@@ -79,21 +79,26 @@ function orbitPath(from: number, to: number, steps = 80): string {
 }
 
 const SAT_END = orbitPoint(SAT_END_T);
-/** The satellite lens, in scene units, when the orbit ends (lens at y=22 in the shape, drawn at 0.9). */
-const SAT_LENS = { x: SAT_END[0], y: SAT_END[1] + 22 * 0.9, r: 6 * 0.9 };
-/** How far the camera magnifies to make the satellite lens fill the lens view. */
-const DIVE = LENS.r / SAT_LENS.r;
+/** The satellite is drawn at 0.9; its front lens ring has radius 15 in the shape. */
+const SAT_SCALE = 0.9;
+const FRONT_LENS_R = 15 * SAT_SCALE;
+/** Camera magnification after the approach, while the satellite turns to face us. */
+const APPROACH = 2.6;
+/** Magnification at which the front lens ring becomes the lens view's bezel. */
+const DIVE = (LENS.r + 18) / FRONT_LENS_R;
+/** Scale of the lens view when the dive starts, so it sits exactly on the lens ring. */
+const LENS_START = APPROACH / DIVE;
 const bits = (n: number) => n.toString(2).padStart(8, "0");
 const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
 
 /** Timeline time (ms) at which each chapter's scene begins; captions follow these. */
-const CHAPTER_STARTS = [0, 1000, 2500, 3100, 3950, 5400];
+const CHAPTER_STARTS = [0, 1000, 2650, 3200, 3950, 5400];
 
 /** Timeline time (ms) during which each scene layer may be visible: [selector, from, to]. */
 const SCENE_WINDOWS: [string, number, number][] = [
-  [".st-world", 0, 1950],
-  [".st-lens", 1040, 3050],
-  [".st-ground", 2650, 4450],
+  [".st-world", 0, 2450],
+  [".st-lens", 1840, 3250],
+  [".st-ground", 2800, 4450],
   [".st-decoder", 4150, Infinity],
   [".st-band", 4780, 5850],
   [".st-map", 5900, Infinity],
@@ -129,6 +134,30 @@ function SatelliteShape() {
       <line className="st-sat-strut" x1={0} y1={-20} x2={0} y2={-32} />
       <path className="st-sat-dish" d="M -9 -32 Q 0 -40 9 -32 Z" />
       <circle className="st-sat-lens" cx={0} cy={22} r={6} />
+    </g>
+  );
+}
+
+/** The satellite seen from below, lens facing the camera. */
+function SatelliteFront() {
+  const cells = (x: number) =>
+    [0, 1, 2, 3].map((i) => <line key={i} x1={x + 11.5 * (i + 1)} y1={-12} x2={x + 11.5 * (i + 1)} y2={12} />);
+  return (
+    <g className="st-sat-shape">
+      <line className="st-sat-strut" x1={-24} y1={0} x2={-20} y2={0} />
+      <line className="st-sat-strut" x1={20} y1={0} x2={24} y2={0} />
+      <rect className="st-sat-panel" x={-80} y={-13} width={56} height={26} rx={2} />
+      <rect className="st-sat-panel" x={24} y={-13} width={56} height={26} rx={2} />
+      <g className="st-sat-cells">
+        {cells(-80)}
+        {cells(24)}
+        <line x1={-80} y1={0} x2={-24} y2={0} />
+        <line x1={24} y1={0} x2={80} y2={0} />
+      </g>
+      <rect className="st-sat-body" x={-20} y={-20} width={40} height={40} rx={6} />
+      <circle className="st-sat-front-ring" cx={0} cy={0} r={15} />
+      <circle cx={0} cy={0} r={10.5} fill="url(#st-glass)" />
+      <ellipse className="st-sat-glint" cx={-4} cy={-4.5} rx={3.6} ry={2.2} transform="rotate(-35 -4 -4.5)" />
     </g>
   );
 }
@@ -231,7 +260,9 @@ export default function OrbitStory() {
 
       /* Starting state of everything that appears later, set at time 0 so that a remount
          or scrolling back to the top always shows the orbit scene alone. */
-      tl.set($(".st-lens"), { opacity: 0, translateX: SAT_LENS.x - LENS.cx, translateY: SAT_LENS.y - LENS.cy, scale: 1 / DIVE }, 0)
+      tl.set($(".st-lens"), { opacity: 0, translateX: 0, translateY: 0, scale: LENS_START }, 0)
+        .set($(".st-sat-side"), { scaleY: 1 }, 0)
+        .set($(".st-sat-front"), { scaleY: 0 }, 0)
         .set($(".st-ground"), { opacity: 0, scale: 1 }, 0)
         .set($(".st-downlink"), { opacity: 0 }, 0)
         .set($(".st-horizon"), { translateY: 320 }, 0)
@@ -252,43 +283,43 @@ export default function OrbitStory() {
       tl.add($(".st-sat-orbit"), { translateX: motion.translateX, translateY: motion.translateY, duration: 1050, ease: "inOutSine" }, 0)
         .add(animeSvg.createDrawable($$(".st-orbit-trail")), { draw: ["0 0", "0 1"], duration: 1050, ease: "inOutSine" }, 0)
 
-        /* 2 · Through the lens: dive into the satellite lens. The world and the lens view share
-           one transform (same ease, same timing), so the tiny lens grows into the lens view. */
+        /* 2 · Through the lens: the camera closes in, the satellite turns its lens to face us
+           (the side view folds away, the front view unfolds), then the camera dives into the
+           lens. The world and the lens view share one transform during the dive, so the lens
+           ring grows into the lens view's bezel. */
         .add($(".st-world"), {
-          translateX: [0, LENS.cx - SAT_LENS.x],
-          translateY: [0, LENS.cy - SAT_LENS.y],
-          scale: [1, DIVE],
-          duration: 850,
-          ease: "inCubic",
+          translateX: [0, LENS.cx - SAT_END[0]],
+          translateY: [0, LENS.cy - SAT_END[1]],
+          scale: [1, APPROACH],
+          duration: 420,
+          ease: "inOutQuad",
         }, 1050)
-        .add($(".st-lens"), { opacity: [0, 1], duration: 80, ease: "linear" }, 1050)
-        .add($(".st-lens"), {
-          translateX: [SAT_LENS.x - LENS.cx, 0],
-          translateY: [SAT_LENS.y - LENS.cy, 0],
-          scale: [1 / DIVE, 1],
-          duration: 850,
-          ease: "inCubic",
-        }, 1050)
-        .add($(".st-world"), { opacity: [1, 0], duration: 120, ease: "linear" }, 1780)
-        .add($(".st-strip"), { translateY: [0, -(scene.stripHeight * STRIP_SCALE - 2 * LENS.r - 40)], duration: 1450, ease: "linear" }, 1100)
-        .add($(".st-lens-ring"), { rotate: [0, 120], duration: 1450, ease: "linear" }, 1100)
-        .add($(".st-lens-scan"), { translateY: [-LENS.r, LENS.r, -LENS.r, LENS.r], duration: 700, ease: "linear" }, 1850)
-        .add($$(".st-hud"), { opacity: [0, 1], translateY: [12, 0], duration: 220, delay: stagger(50) }, 1900)
+        .add($$(".st-orbit-back, .st-orbit-front, .st-orbit-trail"), { opacity: [1, 0], duration: 300, ease: "linear" }, 1100)
+        .add($(".st-sat-side"), { scaleY: [1, 0], duration: 180, ease: "inQuad" }, 1470)
+        .add($(".st-sat-front"), { scaleY: [0, 1], duration: 180, ease: "outQuad" }, 1650)
+        .add($(".st-world"), { scale: [APPROACH, DIVE], duration: 560, ease: "inCubic" }, 1880)
+        .add($(".st-lens"), { opacity: [0, 1], duration: 60, ease: "linear" }, 1880)
+        .add($(".st-lens"), { scale: [LENS_START, 1], duration: 560, ease: "inCubic" }, 1880)
+        .add($(".st-world"), { opacity: [1, 0], duration: 90, ease: "linear" }, 2350)
+        .add($(".st-strip"), { translateY: [0, -(scene.stripHeight * STRIP_SCALE - 2 * LENS.r - 40)], duration: 1250, ease: "linear" }, 1880)
+        .add($(".st-lens-ring"), { rotate: [0, 120], duration: 1250, ease: "linear" }, 1880)
+        .add($(".st-lens-scan"), { translateY: [-LENS.r, LENS.r, -LENS.r, LENS.r], duration: 600, ease: "linear" }, 2420)
+        .add($$(".st-hud"), { opacity: [0, 1], translateY: [12, 0], duration: 200, delay: stagger(45) }, 2450)
 
         /* 3 · Down to Earth */
-        .add($(".st-lens"), { scale: [1, 0.12], translateY: [0, SAT_DOWN.y - LENS.cy], opacity: [1, 0], duration: 450, ease: "inQuad" }, 2550)
-        .add($(".st-ground"), { opacity: [0, 1], duration: 120 }, 2700)
-        .add($(".st-downlink"), { opacity: [0, 1], duration: 250 }, 2800)
-        .add($(".st-horizon"), { translateY: [320, 0], duration: 450, ease: "outQuad" }, 2700)
-        .add($$(".st-wave"), { scale: [0.15, 5.6], opacity: [0, 0.9, 0], duration: 520, delay: stagger(95) }, 2880)
+        .add($(".st-lens"), { scale: [1, 0.12], translateY: [0, SAT_DOWN.y - LENS.cy], opacity: [1, 0], duration: 420, ease: "inQuad" }, 2780)
+        .add($(".st-ground"), { opacity: [0, 1], duration: 120 }, 2850)
+        .add($(".st-downlink"), { opacity: [0, 1], duration: 220 }, 2950)
+        .add($(".st-horizon"), { translateY: [320, 0], duration: 420, ease: "outQuad" }, 2850)
+        .add($$(".st-wave"), { scale: [0.15, 5.6], opacity: [0, 0.9, 0], duration: 480, delay: stagger(90) }, 3010)
 
         /* 4 · Caught on the ground: the dish rises, then its head swings round to track the
            satellite and settles, while the pedestal stays put. */
-        .add($(".st-dish"), { translateY: [460, 0], duration: 420, ease: "outQuad" }, 2950)
-        .add($(".st-dish-head"), { rotate: [-38, 14, -8, 4, -2, 0], duration: 950, ease: "inOutSine" }, 3150)
-        .add($$(".st-wave"), { scale: [0.15, 5.6], opacity: [0, 0.9, 0], duration: 520, delay: stagger(95) }, 3450)
-        .add($$(".st-packet"), { translateY: [0, FEED.y - SAT_DOWN.y - 40], opacity: [0, 1, 1, 0], duration: 360, delay: stagger(55) }, 3450)
-        .add($(".st-status"), { opacity: [0, 1], translateY: [10, 0], duration: 250 }, 3400)
+        .add($(".st-dish"), { translateY: [460, 0], duration: 400, ease: "outQuad" }, 3080)
+        .add($(".st-dish-head"), { rotate: [-38, 14, -8, 4, -2, 0], duration: 850, ease: "inOutSine" }, 3250)
+        .add($$(".st-wave"), { scale: [0.15, 5.6], opacity: [0, 0.9, 0], duration: 460, delay: stagger(80) }, 3530)
+        .add($$(".st-packet"), { translateY: [0, FEED.y - SAT_DOWN.y - 40], opacity: [0, 1, 1, 0], duration: 340, delay: stagger(50) }, 3530)
+        .add($(".st-status"), { opacity: [0, 1], translateY: [10, 0], duration: 250 }, 3480)
 
         /* 5 · Decoded into bands: dive into the feed horn, decode, split the bands out. */
         .add($(".st-ground"), { scale: [1, 6], opacity: [1, 0], duration: 400, ease: "inQuad" }, 4000)
@@ -373,6 +404,11 @@ export default function OrbitStory() {
               <stop offset="0%" stopColor="#2f7fc1" />
               <stop offset="100%" stopColor="#0f3a5c" />
             </radialGradient>
+            <radialGradient id="st-glass" cx="40%" cy="38%" r="65%">
+              <stop offset="0%" stopColor="#2f7fc1" />
+              <stop offset="55%" stopColor="#0f3a5c" />
+              <stop offset="100%" stopColor="#04121a" />
+            </radialGradient>
             <radialGradient id="st-glow" cx="50%" cy="50%" r="50%">
               <stop offset="80%" stopColor="#6cb8f0" stopOpacity="0.35" />
               <stop offset="100%" stopColor="#6cb8f0" stopOpacity="0" />
@@ -412,7 +448,7 @@ export default function OrbitStory() {
           </g>
 
           {/* 1 · Earth and orbit */}
-          <g className="st-world" style={{ transformOrigin: `${SAT_LENS.x}px ${SAT_LENS.y}px` }}>
+          <g className="st-world" style={{ transformOrigin: `${SAT_END[0]}px ${SAT_END[1]}px` }}>
             <circle cx={EARTH.cx} cy={EARTH.cy} r={EARTH.r + 26} fill="url(#st-glow)" />
             <path className="st-orbit-back" d={orbitPath(0, -Math.PI)} />
             <circle cx={EARTH.cx} cy={EARTH.cy} r={EARTH.r} fill="url(#st-ocean)" />
@@ -424,8 +460,13 @@ export default function OrbitStory() {
             <path className="st-orbit-trail" d={orbitPath(Math.PI, SAT_END_T)} />
             <path className="st-satpath" d={orbitPath(Math.PI, SAT_END_T)} />
             <g className="st-sat-orbit">
-              <g transform="scale(0.9)">
-                <SatelliteShape />
+              <g transform={`scale(${SAT_SCALE})`}>
+                <g className="st-sat-side">
+                  <SatelliteShape />
+                </g>
+                <g className="st-sat-front">
+                  <SatelliteFront />
+                </g>
               </g>
             </g>
           </g>
