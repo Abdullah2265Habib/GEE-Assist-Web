@@ -25,7 +25,7 @@ export default function RatingBreakdown({ summary }: { summary: RatingSummary })
               <tr key={s} title={`${n} rating${n === 1 ? "" : "s"} of ${s} star${s === 1 ? "" : "s"}`}>
                 <th scope="row">{s} ★</th>
                 <td className="breakdown-bar-cell">
-                  <span className="breakdown-bar" style={{ width: `${(n / max) * 100}%` }} />
+                  {n > 0 && <span className="breakdown-bar" style={{ width: `${(n / max) * 100}%` }} />}
                 </td>
                 <td className="num">{n}</td>
               </tr>
