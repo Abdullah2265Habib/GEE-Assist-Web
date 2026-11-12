@@ -1467,3 +1467,12 @@ fieldset.field legend {
 .row-actions .btn + .btn {
   margin-left: 6px;
 }
+
+/* A container that is also a doc body: keep the column left-aligned with the page title. */
+.container.doc-body {
+  max-width: none;
+}
+
+.container.doc-body > section {
+  max-width: 760px;
+}

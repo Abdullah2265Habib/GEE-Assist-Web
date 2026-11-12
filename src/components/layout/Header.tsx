@@ -78,8 +78,10 @@ function AccountMenu() {
             type="button"
             onClick={() => {
               setOpen(false);
-              logout();
+              // Leave first: on a protected page the route guard would otherwise send us to
+              // /login and remember the page for after the next sign-in.
               navigate("/");
+              logout();
             }}
           >
             Sign out

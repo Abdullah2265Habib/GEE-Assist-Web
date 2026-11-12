@@ -16,6 +16,8 @@ interface AuthContextValue {
   user: User | null;
   /** True until the stored session has been checked once on page load. */
   ready: boolean;
+  /** True after the user pressed Sign out, until the next sign-in. Guards send them home, not to /login. */
+  signedOut: boolean;
   pending: PendingVerification | null;
   login: (username: string, password: string) => Promise<void>;
   signup: (data: SignupRequest) => Promise<void>;
@@ -56,6 +58,7 @@ function isVerificationRequired(err: unknown): err is ApiError & { detail: Verif
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [ready, setReady] = useState(false);
+  const [signedOut, setSignedOut] = useState(false);
   const [pending, setPendingState] = useState<PendingVerification | null>(readPending);
   const googleAbort = useRef<{ cancelled: boolean } | null>(null);
   // Kept in memory only (never in storage) so the verify screen can sign in by itself.
@@ -75,6 +78,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     (res: LoginResponse) => {
       tokenStore.set(res);
       setUser(res.user);
+      setSignedOut(false);
       setPending(null);
     },
     [setPending],
@@ -189,6 +193,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     credentials.current = null;
     tokenStore.clear();
     setUser(null);
+    setSignedOut(true);
   }, []);
 
   const refreshUser = useCallback(async () => {
@@ -202,6 +207,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     () => ({
       user,
       ready,
+      signedOut,
       pending,
       login,
       signup,
@@ -213,7 +219,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       finishVerification,
       setPending,
     }),
-    [user, ready, pending, login, signup, loginWithGoogle, cancelGoogle, logout, refreshUser, clearPending, finishVerification, setPending],
+    [user, ready, signedOut, pending, login, signup, loginWithGoogle, cancelGoogle, logout, refreshUser, clearPending, finishVerification, setPending],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

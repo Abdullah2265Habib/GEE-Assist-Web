@@ -78,8 +78,8 @@ export default function Account() {
             type="button"
             className="btn btn-danger btn-block"
             onClick={() => {
-              logout();
               navigate("/");
+              logout();
             }}
           >
             Sign out

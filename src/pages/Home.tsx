@@ -74,7 +74,7 @@ function ThemePicker() {
           className="theme-card"
           onClick={() => setTheme(t.name)}
         >
-          <img src={t.icon.replace("-64", "-256")} alt="" width={96} height={96} loading="lazy" />
+          <img src={t.icon.replace("-64", "-256")} alt="" width={96} height={96} />
           <span>{t.label}</span>
         </button>
       ))}
@@ -153,7 +153,7 @@ export default function Home() {
               gkonsol is a terminal built into GEE-Assist, docked under the page like the one in VS Code. It fills the
               same parameter form, starts the same downloads and checks your Earth Engine set-up step by step.
             </p>
-            <p>This one runs in your browser. Watch the request below, then type your own.</p>
+            <p>This one runs in your browser. Watch a request run, then type your own.</p>
             <Link className="btn btn-secondary" to="/terminal">
               Open the full terminal and command list
             </Link>
