@@ -1,4 +1,4 @@
-/** Shapes returned by GEE-Assist-Backend (see its app/*/dto.py). */
+/** Shapes returned by GEE-Assist-Backend (see the dto.py file in each of its app modules). */
 
 export type Role = "admin" | "user";
 

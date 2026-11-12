@@ -7,6 +7,7 @@ import type { LoginResponse, SignupRequest, User, VerificationRequiredDetail } f
 export interface PendingVerification {
   token: string;
   email: string | null;
+  username: string | null;
   /** True when the backend printed the link to its log instead of emailing it (no SMTP configured). */
   consoleMode: boolean;
 }
@@ -24,8 +25,8 @@ interface AuthContextValue {
   logout: () => void;
   refreshUser: () => Promise<void>;
   clearPending: () => void;
-  /** Call after the email link was opened: tries to sign in and clears the pending state. */
-  finishVerification: (username: string, password: string) => Promise<void>;
+  /** Call after the email link was opened. Uses the password typed on this page load, if any. */
+  finishVerification: (username?: string, password?: string) => Promise<boolean>;
   setPending: (p: PendingVerification | null) => void;
 }
 
@@ -57,6 +58,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [ready, setReady] = useState(false);
   const [pending, setPendingState] = useState<PendingVerification | null>(readPending);
   const googleAbort = useRef<{ cancelled: boolean } | null>(null);
+  // Kept in memory only (never in storage) so the verify screen can sign in by itself.
+  const credentials = useRef<{ username: string; password: string } | null>(null);
 
   const setPending = useCallback((p: PendingVerification | null) => {
     setPendingState(p);
@@ -103,10 +106,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     async (username: string, password: string) => {
       try {
         const res = await authApi.login(username, password);
+        credentials.current = null;
         acceptLogin(res);
       } catch (err) {
         if (isVerificationRequired(err)) {
-          setPending({ token: err.detail.verification_token, email: null, consoleMode: false });
+          credentials.current = { username, password };
+          setPending({ token: err.detail.verification_token, email: null, username, consoleMode: false });
           throw new ApiError(403, err.detail.message, err.detail);
         }
         throw err;
@@ -118,9 +123,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signup = useCallback(
     async (data: SignupRequest) => {
       const res = await authApi.signup(data);
+      credentials.current = { username: data.username, password: data.password };
       setPending({
         token: res.verification_token,
         email: res.user.email,
+        username: res.user.username,
         consoleMode: res.email_delivery === "console" || !res.email_sent,
       });
     },
@@ -128,9 +135,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   const finishVerification = useCallback(
-    async (username: string, password: string) => {
-      const res = await authApi.login(username, password);
+    async (username?: string, password?: string) => {
+      const creds = username && password ? { username, password } : credentials.current;
+      if (!creds) return false;
+      const res = await authApi.login(creds.username, creds.password);
+      credentials.current = null;
       acceptLogin(res);
+      return true;
     },
     [acceptLogin],
   );
@@ -175,6 +186,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const logout = useCallback(() => {
+    credentials.current = null;
     tokenStore.clear();
     setUser(null);
   }, []);

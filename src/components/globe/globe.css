@@ -1,0 +1,88 @@
+.globe {
+  --globe-ocean: #2f7fc1;
+  --globe-ocean-hi: #5aa3d9;
+  --globe-land: #a9d39a;
+  --globe-land-stroke: #2f7fc1;
+  --globe-selected: #2e9e78;
+  position: relative;
+  width: 100%;
+  max-width: 560px;
+  margin-inline: auto;
+}
+
+:root[data-theme="dark-green"] .globe {
+  --globe-ocean: #13344a;
+  --globe-ocean-hi: #1f5070;
+  --globe-land: #3f7d68;
+  --globe-land-stroke: #6cb8f0;
+  --globe-selected: #5ed3a8;
+}
+
+:root[data-theme="dark-grey"] .globe {
+  --globe-ocean: #23272b;
+  --globe-ocean-hi: #34393f;
+  --globe-land: #5b6a63;
+  --globe-land-stroke: #9aa4ab;
+  --globe-selected: #6fd3a8;
+}
+
+.globe-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  touch-action: none;
+  cursor: grab;
+  user-select: none;
+}
+
+.globe-svg:active {
+  cursor: grabbing;
+}
+
+.globe-graticule {
+  fill: none;
+  stroke: rgb(255 255 255 / 0.16);
+  stroke-width: 0.6;
+  pointer-events: none;
+}
+
+.globe-country {
+  fill: var(--globe-land);
+  stroke: var(--globe-land-stroke);
+  stroke-opacity: 0.55;
+  stroke-width: 0.5;
+  cursor: pointer;
+  transition: fill 0.15s;
+}
+
+.globe-country:hover {
+  fill: color-mix(in srgb, var(--globe-land) 70%, white);
+}
+
+.globe-country.is-selected {
+  fill: var(--globe-selected);
+  stroke: #ffffff;
+  stroke-opacity: 1;
+  stroke-width: 1.2;
+}
+
+.globe-rim {
+  fill: none;
+  stroke: var(--border-strong);
+  stroke-width: 1;
+  pointer-events: none;
+}
+
+.globe-hover {
+  text-align: center;
+  font-size: var(--text-sm);
+  color: var(--muted);
+  min-height: 1.6em;
+  margin-top: 4px;
+}
+
+.globe-picker {
+  display: block;
+  max-width: 260px;
+  margin: 6px auto 0;
+}
