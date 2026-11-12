@@ -4,9 +4,9 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 export type ThemeName = "light" | "dark-green" | "dark-grey";
 
 export const THEMES: { name: ThemeName; label: string; icon: string }[] = [
-  { name: "light", label: "Light", icon: "/media/icon-light.png" },
-  { name: "dark-green", label: "Dark blue-green", icon: "/media/icon-dark-green.png" },
-  { name: "dark-grey", label: "Dark grey", icon: "/media/icon-dark-grey.png" },
+  { name: "light", label: "Light", icon: "/media/icon-light-64.png" },
+  { name: "dark-green", label: "Dark blue-green", icon: "/media/icon-dark-green-64.png" },
+  { name: "dark-grey", label: "Dark grey", icon: "/media/icon-dark-grey-64.png" },
 ];
 
 const STORAGE_KEY = "gee-assist-theme";
