@@ -1,0 +1,396 @@
+@import "./tokens.css";
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--text-md);
+  line-height: 1.6;
+  color: var(--text);
+  background: var(--page);
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 0.3s var(--ease), color 0.3s var(--ease);
+}
+
+#root {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+main {
+  flex: 1;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-display);
+  color: var(--ink);
+  line-height: 1.1;
+  margin: 0 0 0.5em;
+  letter-spacing: -0.015em;
+  font-weight: 600;
+  text-wrap: balance;
+}
+
+h1 {
+  font-size: var(--text-hero);
+  font-weight: 500;
+  letter-spacing: -0.03em;
+}
+
+h2 {
+  font-size: var(--text-2xl);
+}
+
+h3 {
+  font-size: var(--text-xl);
+}
+
+h4 {
+  font-size: var(--text-lg);
+}
+
+p {
+  margin: 0 0 1em;
+  max-width: var(--measure);
+  text-wrap: pretty;
+}
+
+a {
+  color: var(--ocean);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.15em;
+}
+
+a:hover {
+  color: var(--ocean-dark);
+}
+
+code,
+kbd,
+pre {
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+}
+
+code {
+  background: var(--foam);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.05em 0.35em;
+  color: var(--ink);
+}
+
+kbd {
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  padding: 0 0.4em;
+  color: var(--ink);
+  font-size: 0.85em;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+:focus-visible {
+  outline: 2px solid var(--ocean);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+img,
+video {
+  max-width: 100%;
+  display: block;
+}
+
+.container {
+  width: min(100% - 2 * var(--gutter), var(--content));
+  margin-inline: auto;
+}
+
+.section {
+  padding-block: clamp(56px, 9vw, 112px);
+}
+
+.section + .section {
+  border-top: 1px solid var(--border);
+}
+
+.section-intro {
+  margin-bottom: clamp(28px, 4vw, 48px);
+}
+
+.lede {
+  font-size: var(--text-lg);
+  color: var(--muted);
+  max-width: 54ch;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* Buttons --------------------------------------------------------------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  padding: 0.7em 1.25em;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-weight: 500;
+  font-size: var(--text-sm);
+  line-height: 1.2;
+  text-decoration: none;
+  transition: background-color 0.15s, border-color 0.15s, color 0.15s, transform 0.15s;
+  white-space: nowrap;
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn-primary {
+  background: var(--leaf);
+  color: var(--on-primary);
+}
+
+.btn-primary:hover {
+  background: var(--leaf-dark);
+  color: var(--on-primary);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--ink);
+  border-color: var(--border-strong);
+}
+
+.btn-secondary:hover {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+.btn-quiet {
+  background: transparent;
+  color: var(--text);
+  padding-inline: 0.75em;
+}
+
+.btn-quiet:hover {
+  background: var(--foam);
+  color: var(--ink);
+}
+
+.btn-danger {
+  background: transparent;
+  color: var(--error);
+  border-color: var(--error-border);
+}
+
+.btn-danger:hover {
+  background: var(--error-bg);
+}
+
+.btn[disabled],
+.btn[aria-disabled="true"] {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-lg {
+  font-size: var(--text-md);
+  padding: 0.85em 1.5em;
+}
+
+.btn-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+/* Forms ----------------------------------------------------------------- */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35em;
+  margin-bottom: 1.1rem;
+}
+
+.field label {
+  font-weight: 500;
+  color: var(--ink);
+  font-size: var(--text-sm);
+}
+
+.field .hint {
+  color: var(--muted);
+  font-size: var(--text-xs);
+}
+
+.field .error-text {
+  color: var(--error);
+  font-size: var(--text-xs);
+}
+
+.input,
+.select,
+.textarea {
+  width: 100%;
+  background: var(--field);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  padding: 0.65em 0.85em;
+  color: var(--ink);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.input:focus,
+.select:focus,
+.textarea:focus {
+  outline: none;
+  border-color: var(--ocean);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ocean) 22%, transparent);
+}
+
+.input[aria-invalid="true"],
+.textarea[aria-invalid="true"] {
+  border-color: var(--error);
+}
+
+.textarea {
+  min-height: 7.5em;
+  resize: vertical;
+}
+
+/* Notices --------------------------------------------------------------- */
+
+.notice {
+  border: 1px solid var(--info-border);
+  background: var(--info-bg);
+  border-radius: var(--radius-sm);
+  padding: 0.8em 1em;
+  color: var(--ink);
+  font-size: var(--text-sm);
+  margin-bottom: 1rem;
+}
+
+.notice p {
+  margin: 0;
+}
+
+.notice p + p {
+  margin-top: 0.4em;
+}
+
+.notice-error {
+  border-color: var(--error-border);
+  background: var(--error-bg);
+}
+
+.notice-success {
+  border-color: var(--success-border);
+  background: var(--success-bg);
+}
+
+/* Page header ----------------------------------------------------------- */
+
+.page-head {
+  padding-block: clamp(48px, 8vw, 96px) clamp(24px, 4vw, 48px);
+}
+
+.page-head h1 {
+  font-size: var(--text-2xl);
+  font-weight: 600;
+}
+
+/* Status pills ---------------------------------------------------------- */
+
+.pill {
+  display: inline-block;
+  border-radius: 999px;
+  padding: 0.15em 0.7em;
+  font-size: var(--text-xs);
+  font-weight: 500;
+  border: 1px solid var(--border-strong);
+  color: var(--text);
+  background: var(--surface);
+  white-space: nowrap;
+}
+
+.pill-green {
+  color: var(--success);
+  border-color: var(--success-border);
+  background: var(--success-bg);
+}
+
+.pill-blue {
+  color: var(--ocean);
+  border-color: var(--info-border);
+  background: var(--info-bg);
+}
+
+.pill-red {
+  color: var(--error);
+  border-color: var(--error-border);
+  background: var(--error-bg);
+}
+
+/* Panels (a bordered surface; used only where content is a distinct set) */
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: clamp(18px, 3vw, 28px);
+}
+
+/* Reduced motion -------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

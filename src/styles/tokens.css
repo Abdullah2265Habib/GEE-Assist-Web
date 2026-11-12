@@ -1,0 +1,136 @@
+/* Colour tokens. The names and values come from the desktop app's palette
+   (frontend/palette.py in GEE-Assist) so the website and the app look like
+   one product. Three themes, as in the app: light, dark blue-green, dark grey. */
+
+:root {
+  --surface: #ffffff;
+  --page: #f2f8f6;
+  --page-2: #ecf4fb;
+  --ink: #1e3a3a;
+  --text: #34504f;
+  --muted: #6b8582;
+  --subtle: #93a9a6;
+  --border: #d3e4df;
+  --border-strong: #b9d3cc;
+  --field: #fbfdfc;
+  --leaf: #2e9e78;
+  --leaf-dark: #237d60;
+  --ocean: #2f7fc1;
+  --ocean-dark: #24659c;
+  --mint: #eaf6f0;
+  --sky: #e6f1fa;
+  --foam: #f4faf8;
+  --header-green: #dff1e8;
+  --header-blue: #dfedf7;
+  --error: #c0392b;
+  --error-bg: #fdf1ef;
+  --error-border: #f3c9c3;
+  --success: #23845e;
+  --success-bg: #ecf7f1;
+  --success-border: #bfe3d1;
+  --info-bg: #eef5fb;
+  --info-border: #c9dff1;
+  --on-primary: #ffffff;
+  --terminal-bg: #0f2224;
+  --terminal-text: #cfe5e0;
+  --terminal-prompt: #5ed3a8;
+  --terminal-muted: #80a39d;
+  --terminal-blue: #6cb8f0;
+  --terminal-error: #ff8f80;
+  --star: #e3a83b;
+  color-scheme: light;
+}
+
+:root[data-theme="dark-green"] {
+  --surface: #173235;
+  --page: #0f2224;
+  --page-2: #0e1f2b;
+  --ink: #eaf7f3;
+  --text: #cfe5e0;
+  --muted: #a3c2bc;
+  --subtle: #80a39d;
+  --border: #2b4d4e;
+  --border-strong: #3f6866;
+  --field: #12292b;
+  --leaf: #5ed3a8;
+  --leaf-dark: #86e3c1;
+  --ocean: #6cb8f0;
+  --ocean-dark: #93ccf6;
+  --mint: #21403f;
+  --sky: #1c3448;
+  --foam: #1e3b3c;
+  --header-green: #1d3d39;
+  --header-blue: #1b3445;
+  --error: #ff8f80;
+  --error-bg: #3a2224;
+  --error-border: #6b3a37;
+  --success: #72dfb2;
+  --success-bg: #163a2e;
+  --success-border: #2e6650;
+  --info-bg: #172f42;
+  --info-border: #2e5677;
+  --on-primary: #0b1f21;
+  --terminal-bg: #0a1819;
+  --star: #f0c25c;
+  color-scheme: dark;
+}
+
+:root[data-theme="dark-grey"] {
+  --surface: #1f1f1f;
+  --page: #121212;
+  --page-2: #161616;
+  --ink: #f2f2f2;
+  --text: #d9d9d9;
+  --muted: #ababab;
+  --subtle: #8a8a8a;
+  --border: #333333;
+  --border-strong: #4a4a4a;
+  --field: #181818;
+  --leaf: #6fd3a8;
+  --leaf-dark: #92e2c2;
+  --ocean: #7cbcf0;
+  --ocean-dark: #a0cdf5;
+  --mint: #223129;
+  --sky: #1e2a35;
+  --foam: #262626;
+  --header-green: #242b28;
+  --header-blue: #23292f;
+  --error: #ff9a8c;
+  --error-bg: #332222;
+  --error-border: #5c3a37;
+  --success: #7fe0b9;
+  --success-bg: #1d3328;
+  --success-border: #2e5a46;
+  --info-bg: #1f2b38;
+  --info-border: #2f4a66;
+  --on-primary: #111111;
+  --terminal-bg: #0d0d0d;
+  --terminal-text: #d9d9d9;
+  --terminal-prompt: #6fd3a8;
+  --terminal-muted: #8a8a8a;
+  --terminal-blue: #7cbcf0;
+  --star: #f0c25c;
+  color-scheme: dark;
+}
+
+:root {
+  --font-display: "Bricolage Grotesque", "IBM Plex Sans", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+
+  --text-xs: 0.8125rem;
+  --text-sm: 0.9rem;
+  --text-md: 1.0625rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.6rem;
+  --text-2xl: clamp(2rem, 1.4rem + 2.4vw, 3rem);
+  --text-hero: clamp(2.6rem, 1.6rem + 4.6vw, 5rem);
+
+  --measure: 62ch;
+  --content: 1120px;
+  --gutter: clamp(16px, 4vw, 40px);
+  --radius-sm: 6px;
+  --radius: 12px;
+  --radius-lg: 20px;
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+}

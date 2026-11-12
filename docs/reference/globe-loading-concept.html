@@ -1,0 +1,620 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>World Explorer — Loading</title>
+
+  <!-- amCharts 5 -->
+  <script src="https://cdn.amcharts.com/lib/5/index.js"></script>
+  <script src="https://cdn.amcharts.com/lib/5/map.js"></script>
+  <script src="https://cdn.amcharts.com/lib/5/geodata/worldLow.js"></script>
+  <script src="https://cdn.amcharts.com/lib/5/themes/Responsive.js"></script>
+
+  <style>
+    :root {
+      --bg: #050a12;
+      --cyan: #70e7ef;
+      --muted: #7f94a9;
+      --line: rgba(112, 231, 239, 0.18);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      width: 100%;
+      min-height: 100vh;
+      overflow: hidden;
+      color: #edfaff;
+      background:
+        radial-gradient(ellipse at 50% 45%,
+          rgba(10, 68, 91, 0.24), transparent 48%),
+        radial-gradient(ellipse at 50% 100%,
+          #0a1827, var(--bg) 65%);
+      font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+    }
+
+    .screen {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      min-height: 520px;
+      overflow: hidden;
+      isolation: isolate;
+    }
+
+    /* Subtle technical grid */
+    .screen::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      opacity: 0.15;
+      background-image:
+        linear-gradient(rgba(112,231,239,.07) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(112,231,239,.07) 1px, transparent 1px);
+      background-size: 64px 64px;
+      mask-image: radial-gradient(ellipse, black, transparent 75%);
+      pointer-events: none;
+    }
+
+    header {
+      position: absolute;
+      z-index: 5;
+      top: 0;
+      left: 0;
+      width: 100%;
+      padding: 28px 5vw;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .brand {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      letter-spacing: 3px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .brand-mark {
+      width: 30px;
+      height: 30px;
+      border: 1px solid var(--cyan);
+      color: var(--cyan);
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: 17px;
+    }
+
+    .header-status {
+      color: var(--muted);
+      font-size: 10px;
+      letter-spacing: 2px;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+
+    .dot {
+      width: 6px;
+      height: 6px;
+      background: var(--cyan);
+      border-radius: 50%;
+      box-shadow: 0 0 12px var(--cyan);
+    }
+
+    main {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+    }
+
+    #globe-wrap {
+      position: absolute;
+      width: min(94vw, 850px);
+      height: min(94vw, 850px);
+      max-height: 86vh;
+      max-width: 86vh;
+      filter: drop-shadow(0 0 45px rgba(0, 198, 225, 0.08));
+    }
+
+    #chartdiv {
+      width: 100%;
+      height: 100%;
+      touch-action: pan-y;
+    }
+
+    .vignette {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      background: linear-gradient(
+        to bottom,
+        var(--bg) 0%,
+        transparent 22%,
+        transparent 70%,
+        var(--bg) 100%
+      );
+    }
+
+    .hero {
+      position: absolute;
+      z-index: 3;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: min(90%, 550px);
+      text-align: center;
+      pointer-events: none;
+    }
+
+    .eyebrow {
+      font-size: 10px;
+      color: var(--cyan);
+      letter-spacing: 5px;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      margin: 0;
+      font-weight: 400;
+      letter-spacing: -2px;
+      font-size: clamp(40px, 6.5vw, 76px);
+      line-height: 1.05;
+      text-shadow: 0 4px 35px #050a12;
+    }
+
+    h1 span {
+      color: var(--cyan);
+    }
+
+    .subtitle {
+      color: #a1b6c9;
+      font-size: 12px;
+      letter-spacing: 1.5px;
+      line-height: 1.9;
+      margin-top: 20px;
+    }
+
+    .loader {
+      margin: 36px auto 0;
+      width: 170px;
+    }
+
+    .loader-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 9px;
+      letter-spacing: 1.5px;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    .track {
+      height: 2px;
+      width: 100%;
+      background: rgba(112, 231, 239, 0.16);
+      overflow: hidden;
+    }
+
+    .track span {
+      display: block;
+      height: 100%;
+      width: 35%;
+      background: var(--cyan);
+      box-shadow: 0 0 12px var(--cyan);
+      animation: loading 2.5s ease-in-out infinite;
+    }
+
+    @keyframes loading {
+      0% { transform: translateX(-110%); }
+      100% { transform: translateX(390%); }
+    }
+
+    .controls {
+      position: absolute;
+      z-index: 6;
+      right: 5vw;
+      bottom: 120px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .control {
+      width: 42px;
+      height: 42px;
+      border: 1px solid var(--line);
+      color: var(--cyan);
+      background: rgba(5, 15, 26, .82);
+      font-size: 20px;
+      cursor: pointer;
+      transition: background .2s, border-color .2s;
+      backdrop-filter: blur(10px);
+    }
+
+    .control:hover {
+      background: rgba(30, 103, 121, .5);
+      border-color: var(--cyan);
+    }
+
+    .country-panel {
+      position: absolute;
+      z-index: 5;
+      left: 5vw;
+      bottom: 120px;
+      max-width: 230px;
+      pointer-events: none;
+    }
+
+    .panel-label {
+      color: var(--muted);
+      font-size: 9px;
+      letter-spacing: 3px;
+      margin-bottom: 12px;
+    }
+
+    #country-name {
+      font-size: 23px;
+      font-weight: 400;
+      min-height: 29px;
+    }
+
+    #country-code {
+      color: var(--cyan);
+      font-size: 10px;
+      letter-spacing: 2px;
+      margin-top: 8px;
+    }
+
+    footer {
+      position: absolute;
+      z-index: 5;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      padding: 26px 5vw;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid rgba(112, 231, 239, .08);
+      color: var(--muted);
+      font-size: 9px;
+      letter-spacing: 2px;
+    }
+
+    .footer-right { text-align: right; }
+
+    @media (max-width: 600px) {
+      header { padding: 20px 22px; }
+      .header-status { font-size: 8px; letter-spacing: 1px; }
+      #globe-wrap {
+        width: 120vw;
+        height: 120vw;
+        max-width: none;
+        max-height: none;
+        top: 43%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+      }
+      .hero { top: 46%; }
+      h1 { font-size: 47px; }
+      .subtitle { font-size: 10px; }
+      .country-panel { left: 22px; bottom: 98px; }
+      #country-name { font-size: 19px; }
+      .controls { right: 22px; bottom: 98px; }
+      .control { width: 38px; height: 38px; }
+      footer { padding: 18px 22px; font-size: 8px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .track span { animation: none; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="screen">
+    <header>
+      <div class="brand">
+        <div class="brand-mark">◎</div>
+        <span>ORBITAL / 01</span>
+      </div>
+      <div class="header-status">
+        <span class="dot"></span>
+        GLOBAL SYSTEM ONLINE
+      </div>
+    </header>
+
+    <main>
+      <div id="globe-wrap">
+        <div id="chartdiv" aria-label="Interactive globe of world countries"></div>
+      </div>
+
+      <div class="vignette"></div>
+
+      <section class="hero">
+        <div class="eyebrow">A WORLD OF POSSIBILITIES</div>
+        <h1>Explore<br /><span>the world.</span></h1>
+        <p class="subtitle">
+          Connecting places, people and possibilities.<br />
+          Select a country to begin your journey.
+        </p>
+
+        <div class="loader">
+          <div class="loader-meta">
+            <span id="load-label">INITIALIZING</span>
+            <span id="load-value">00%</span>
+          </div>
+          <div class="track"><span></span></div>
+        </div>
+      </section>
+    </main>
+
+    <aside class="country-panel">
+      <div class="panel-label">CURRENT DESTINATION</div>
+      <div id="country-name">Earth</div>
+      <div id="country-code">GLOBAL VIEW / 001</div>
+    </aside>
+
+    <div class="controls" aria-label="Globe controls">
+      <button class="control" id="zoom-in" aria-label="Zoom in">+</button>
+      <button class="control" id="zoom-out" aria-label="Zoom out">−</button>
+      <button class="control" id="home" aria-label="Reset globe">⌂</button>
+    </div>
+
+    <footer>
+      <span>WORLDWIDE NETWORK</span>
+      <span class="footer-right">DRAG TO ROTATE · SELECT TO EXPLORE</span>
+    </footer>
+  </div>
+
+  <script>
+    am5.ready(function () {
+      const root = am5.Root.new("chartdiv");
+
+      // Apply the official Responsive theme.
+      root.setThemes([
+        am5themes_Responsive.new(root)
+      ]);
+
+      const cyan = am5.color(0x70e7ef);
+      const land = am5.color(0x16364b);
+      const hover = am5.color(0x2d899b);
+      const border = am5.color(0x4e8197);
+
+      const chart = root.container.children.push(
+        am5map.MapChart.new(root, {
+          projection: am5map.geoOrthographic(),
+          panX: "rotateX",
+          panY: "rotateY",
+          wheelY: "zoom",
+          minZoomLevel: 0.8,
+          maxZoomLevel: 16,
+          zoomStep: 1.5,
+          paddingTop: 20,
+          paddingBottom: 20,
+          paddingLeft: 20,
+          paddingRight: 20,
+          homeGeoPoint: {
+            longitude: 0,
+            latitude: 15
+          }
+        })
+      );
+
+      // A subtle sphere behind the countries.
+      const backgroundSeries = chart.series.push(
+        am5map.MapPolygonSeries.new(root, {})
+      );
+
+      backgroundSeries.mapPolygons.template.setAll({
+        fill: am5.color(0x071725),
+        fillOpacity: 1,
+        stroke: am5.color(0x14374a),
+        strokeOpacity: 0.8
+      });
+
+      backgroundSeries.data.push({
+        geometry: am5map.getGeoRectangle(90, 180, -90, -180)
+      });
+
+      // Draw all countries from the bundled world geodata.
+      const polygonSeries = chart.series.push(
+        am5map.MapPolygonSeries.new(root, {
+          geoJSON: am5geodata_worldLow,
+          exclude: ["AQ"]
+        })
+      );
+
+      polygonSeries.mapPolygons.template.setAll({
+        fill: land,
+        fillOpacity: 0.94,
+        stroke: border,
+        strokeOpacity: 0.6,
+        strokeWidth: 0.65,
+        tooltipText: "{name}",
+        interactive: true,
+        toggleKey: "active"
+      });
+
+      polygonSeries.mapPolygons.template.states.create("hover", {
+        fill: hover,
+        fillOpacity: 1,
+        stroke: cyan,
+        strokeOpacity: 0.95
+      });
+
+      polygonSeries.mapPolygons.template.states.create("active", {
+        fill: cyan,
+        fillOpacity: 0.95,
+        stroke: am5.color(0xffffff),
+        strokeWidth: 1.1
+      });
+
+      // Animated country selection.
+      let previousPolygon;
+      let spinAnimation;
+      let selectedCountry = null;
+
+      function stopSpin() {
+        if (spinAnimation) {
+          spinAnimation.stop();
+          spinAnimation = null;
+        }
+      }
+
+      function startSpin() {
+        stopSpin();
+
+        if (window.matchMedia(
+          "(prefers-reduced-motion: reduce)"
+        ).matches) return;
+
+        spinAnimation = chart.animate({
+          key: "rotationX",
+          to: chart.get("rotationX", 0) + 360,
+          duration: 90000,
+          loops: Infinity
+        });
+      }
+
+      function selectCountry(dataItem) {
+        if (!dataItem) return;
+
+        stopSpin();
+
+        const polygon = dataItem.get("mapPolygon");
+        if (!polygon) return;
+
+        if (previousPolygon && previousPolygon !== polygon) {
+          previousPolygon.set("active", false);
+        }
+
+        polygon.set("active", true);
+        previousPolygon = polygon;
+
+        const name = dataItem.dataContext.name || "Selected country";
+        const id = dataItem.get("id") || "—";
+
+        document.getElementById("country-name").textContent = name;
+        document.getElementById("country-code").textContent =
+          "COUNTRY / " + id;
+
+        selectedCountry = dataItem;
+
+        // Rotate the globe so the selected country faces forward.
+        const centroid = polygon.geoCentroid();
+
+        if (centroid) {
+          chart.animate({
+            key: "rotationX",
+            to: -centroid.longitude,
+            duration: 1200,
+            easing: am5.ease.inOut(am5.ease.cubic)
+          });
+
+          chart.animate({
+            key: "rotationY",
+            to: -centroid.latitude,
+            duration: 1200,
+            easing: am5.ease.inOut(am5.ease.cubic)
+          });
+        }
+
+        // Zoom after the rotation has had time to complete.
+        root.events.once("frameended", function () {
+          // Rotation animation handles the focus. The polygon
+          // zoom is then performed using the built-in API.
+        });
+
+        polygonSeries.zoomToDataItem(dataItem);
+      }
+
+      polygonSeries.mapPolygons.template.events.on(
+        "click",
+        function (event) {
+          selectCountry(event.target.dataItem);
+        }
+      );
+
+      // Optional reset behavior for clicking the ocean.
+      chart.chartContainer.get("background").events.on(
+        "click",
+        function () {
+          resetGlobe();
+        }
+      );
+
+      function resetGlobe() {
+        stopSpin();
+
+        if (previousPolygon) {
+          previousPolygon.set("active", false);
+          previousPolygon = null;
+        }
+
+        selectedCountry = null;
+
+        document.getElementById("country-name").textContent = "Earth";
+        document.getElementById("country-code").textContent =
+          "GLOBAL VIEW / 001";
+
+        chart.goHome();
+
+        // Restart the ambient rotation after returning home.
+        root.events.once("frameended", startSpin);
+      }
+
+      document.getElementById("zoom-in").onclick = function () {
+        stopSpin();
+        chart.zoomIn();
+      };
+
+      document.getElementById("zoom-out").onclick = function () {
+        stopSpin();
+        chart.zoomOut();
+      };
+
+      document.getElementById("home").onclick = resetGlobe;
+
+      // Stop ambient rotation when the user begins interacting.
+      chart.events.on("pointerdown", stopSpin);
+
+      // Loading indicator is decorative. Replace this with your
+      // application's actual loading progress when available.
+      let progress = 0;
+      const progressTimer = setInterval(function () {
+        progress = Math.min(progress + Math.random() * 9, 96);
+
+        document.getElementById("load-value").textContent =
+          String(Math.floor(progress)).padStart(2, "0") + "%";
+
+        if (progress >= 96) {
+          clearInterval(progressTimer);
+          document.getElementById("load-label").textContent =
+            "READY TO EXPLORE";
+        }
+      }, 350);
+
+      polygonSeries.events.once("datavalidated", function () {
+        chart.appear(1000, 100);
+        startSpin();
+      });
+
+      // Release chart resources if the page is torn down.
+      window.addEventListener("pagehide", function () {
+        root.dispose();
+      }, { once: true });
+    });
+  </script>
+</body>
+</html>

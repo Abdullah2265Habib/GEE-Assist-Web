@@ -218,3 +218,10 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Website (Node)
+node_modules/
+dist/
+.env
+.env.local
+*.local
