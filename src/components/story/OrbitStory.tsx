@@ -88,6 +88,17 @@ const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
 
 /** Timeline time (ms) at which each chapter's scene begins; captions follow these. */
 const CHAPTER_STARTS = [0, 1000, 2500, 3100, 3950, 5400];
+
+/** Timeline time (ms) during which each scene layer may be visible: [selector, from, to]. */
+const SCENE_WINDOWS: [string, number, number][] = [
+  [".st-world", 0, 1950],
+  [".st-lens", 1040, 3050],
+  [".st-ground", 2650, 4450],
+  [".st-decoder", 4150, Infinity],
+  [".st-band", 4780, 5850],
+  [".st-map", 5900, Infinity],
+  [".st-map-late-layer", 5900, Infinity],
+];
 const chapterAt = (t: number) => {
   let c = 0;
   CHAPTER_STARTS.forEach((start, i) => {
@@ -185,7 +196,21 @@ export default function OrbitStory() {
       });
     };
 
+    /* Each scene is only rendered inside its time window. Scroll smoothing approaches its
+       target gradually, which can leave a scene at a few percent opacity after you scroll
+       back past it; hiding it outright means no trace of it can show. */
+    const windows = SCENE_WINDOWS.map(([sel, from, to]) => ({ els: $$(sel), from, to }));
+    const showScenes = (t: number) => {
+      windows.forEach(({ els, from, to }) => {
+        const v = t >= from && t <= to ? "visible" : "hidden";
+        els.forEach((el) => {
+          if (el.getAttribute("visibility") !== v) el.setAttribute("visibility", v);
+        });
+      });
+    };
+
     const updateFromTime = (t: number) => {
+      showScenes(t);
       drawEarth(-60 + (t / 2600) * 110);
       drawDecoder(clamp01((t - 4250) / 500));
       const c = chapterAt(t);
@@ -198,7 +223,7 @@ export default function OrbitStory() {
     let scope: Scope | null = createScope({ root }).add(() => {
       const tl = createTimeline({
         defaults: { ease: "inOutQuad" },
-        autoplay: reduced ? false : onScroll({ target: root, enter: "top top", leave: "bottom bottom", sync: 0.35 }),
+        autoplay: reduced ? false : onScroll({ target: root, enter: "top top", leave: "bottom bottom", sync: 0.5 }),
         onUpdate: (self) => updateFromTime(self.currentTime),
       });
       tlRef.current = tl;
