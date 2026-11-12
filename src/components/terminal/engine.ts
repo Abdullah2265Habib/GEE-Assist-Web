@@ -392,8 +392,15 @@ export function run(session: Session, raw: string): RunResult {
             f.bands = DEFAULT_BANDS[ds.key] ?? [];
             f.scale = ds.scale;
             f.cloud = ds.cloudFilter ? 20 : null;
+            // Move the dates inside the dataset, keeping the same length where possible.
+            const span = Math.max(0, Date.parse(f.end) - Date.parse(f.start));
+            const iso = (ms: number) => new Date(ms).toISOString().slice(0, 10);
+            if (ds.until && f.end > ds.until) {
+              f.end = ds.until;
+              f.start = iso(Date.parse(ds.until) - span);
+            }
             if (f.start < ds.since) f.start = ds.since;
-            if (ds.until && f.end > ds.until) f.end = ds.until;
+            if (f.end < f.start) f.end = ds.until && iso(Date.parse(f.start) + span) > ds.until ? ds.until : iso(Date.parse(f.start) + span);
             return {
               lines: [
                 L("ok", `✓ dataset = ${ds.key}  (${ds.name})`),
