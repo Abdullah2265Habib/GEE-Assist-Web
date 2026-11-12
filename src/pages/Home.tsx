@@ -8,6 +8,7 @@ import { DOWNLOAD_URL } from "../config";
 
 const Globe = lazy(() => import("../components/globe/Globe"));
 const Terminal = lazy(() => import("../components/terminal/Terminal"));
+const OrbitStory = lazy(() => import("../components/story/OrbitStory"));
 
 const fmt = (n: number) => n.toFixed(2);
 
@@ -127,6 +128,10 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <Suspense fallback={<div className="story-placeholder" />}>
+        <OrbitStory />
+      </Suspense>
 
       <section className="section">
         <div className="container">

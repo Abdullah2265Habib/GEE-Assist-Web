@@ -1,0 +1,466 @@
+/* The story is a night scene in every theme, like the terminal band. */
+
+.story {
+  --st-bg: #06141b;
+  --st-ink: #eaf7f3;
+  --st-text: #b9d3cc;
+  --st-muted: #7f9c97;
+  --st-leaf: #5ed3a8;
+  --st-ocean: #6cb8f0;
+  --st-line: rgb(234 247 243 / 0.14);
+  position: relative;
+  height: 700vh;
+  background: var(--st-bg);
+  color: var(--st-text);
+}
+
+.story-stage {
+  position: sticky;
+  top: 64px;
+  height: calc(100vh - 64px);
+  height: calc(100dvh - 64px);
+  display: grid;
+  grid-template-columns: minmax(260px, 360px) minmax(0, 1fr);
+  gap: clamp(16px, 3vw, 40px);
+  padding: clamp(16px, 3vw, 40px) clamp(16px, 4vw, 56px) 0;
+  overflow: hidden;
+}
+
+.story-copy {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 28px;
+  z-index: 1;
+}
+
+.story-kicker {
+  font-size: var(--text-sm);
+  font-family: var(--font-body);
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--st-leaf);
+  margin: 0;
+}
+
+.story-captions {
+  display: grid;
+}
+
+.story-caption {
+  grid-area: 1 / 1;
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.45s var(--ease), transform 0.45s var(--ease);
+  pointer-events: none;
+}
+
+.story-caption.is-active {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+
+.story-caption h3 {
+  color: var(--st-ink);
+  font-size: clamp(1.8rem, 1.2rem + 1.8vw, 2.8rem);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.4em;
+}
+
+.story-caption p {
+  font-size: var(--text-md);
+  color: var(--st-text);
+  margin: 0;
+}
+
+.story-rail {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.story-rail button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: none;
+  border: 0;
+  padding: 5px 0;
+  color: var(--st-muted);
+  font-size: var(--text-xs);
+  text-align: left;
+}
+
+.story-rail button:hover {
+  color: var(--st-ink);
+}
+
+.story-rail-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1.5px solid var(--st-muted);
+  transition: background-color 0.3s, border-color 0.3s, transform 0.3s;
+}
+
+.story-rail .is-done .story-rail-dot {
+  background: var(--st-muted);
+}
+
+.story-rail .is-active {
+  color: var(--st-ink);
+}
+
+.story-rail .is-active .story-rail-dot {
+  background: var(--st-leaf);
+  border-color: var(--st-leaf);
+  transform: scale(1.35);
+}
+
+.story-svg {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  display: block;
+}
+
+@media (max-width: 860px) {
+  .story-stage {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto minmax(0, 1fr);
+    gap: 8px;
+  }
+
+  .story-copy {
+    gap: 12px;
+  }
+
+  .story-caption h3 {
+    font-size: 1.5rem;
+  }
+
+  .story-caption p {
+    font-size: var(--text-sm);
+  }
+
+  .story-rail {
+    display: flex;
+    gap: 14px;
+  }
+
+  .story-rail-label {
+    display: none;
+  }
+
+  .story-rail button {
+    padding: 8px 0;
+  }
+}
+
+/* Reduced motion: no pinning, every chapter written out, the last frame shown. */
+.story.is-static {
+  height: auto;
+}
+
+.story.is-static .story-stage {
+  position: relative;
+  top: 0;
+  height: auto;
+  align-items: start;
+}
+
+.story.is-static .story-caption {
+  grid-area: auto;
+  opacity: 1;
+  transform: none;
+  margin-bottom: 20px;
+}
+
+.story.is-static .story-rail {
+  display: none;
+}
+
+.story.is-static .story-svg {
+  height: auto;
+  aspect-ratio: 4 / 3;
+}
+
+/* ---- scene ---------------------------------------------------------- */
+
+.story svg * {
+  transform-box: view-box;
+}
+
+.st-space {
+  fill: var(--st-bg);
+}
+
+.st-stars circle {
+  fill: #ffffff;
+}
+
+.st-orbit-back {
+  fill: none;
+  stroke: var(--st-line);
+  stroke-width: 1.5;
+  stroke-dasharray: 3 7;
+}
+
+.st-orbit-front {
+  fill: none;
+  stroke: rgb(234 247 243 / 0.22);
+  stroke-width: 1.5;
+  stroke-dasharray: 3 7;
+}
+
+.st-orbit-trail {
+  fill: none;
+  stroke: var(--st-leaf);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+}
+
+.st-satpath {
+  fill: none;
+  stroke: none;
+}
+
+.st-graticule {
+  fill: none;
+  stroke: rgb(255 255 255 / 0.12);
+  stroke-width: 0.6;
+}
+
+.st-country {
+  fill: #7fbf86;
+  stroke: #1f5e84;
+  stroke-width: 0.5;
+}
+
+.st-sat-panel {
+  fill: #2f5f9e;
+  stroke: #9cc7f2;
+  stroke-width: 1;
+}
+
+.st-sat-cells line {
+  stroke: #9cc7f2;
+  stroke-width: 0.6;
+  opacity: 0.7;
+}
+
+.st-sat-body {
+  fill: #dfe7ea;
+  stroke: #8aa1a8;
+  stroke-width: 1;
+}
+
+.st-sat-band {
+  fill: #e3a83b;
+}
+
+.st-sat-strut {
+  stroke: #b8c6cb;
+  stroke-width: 2;
+}
+
+.st-sat-dish {
+  fill: #dfe7ea;
+}
+
+.st-sat-lens {
+  fill: #0b1d26;
+  stroke: var(--st-ocean);
+  stroke-width: 2;
+}
+
+.st-lens-bezel {
+  fill: #0b1d26;
+  stroke: rgb(108 184 240 / 0.45);
+  stroke-width: 2;
+}
+
+.st-lens-tint {
+  fill: url(#st-glow);
+  opacity: 0.15;
+}
+
+.st-scanline {
+  fill: var(--st-leaf);
+  opacity: 0.85;
+}
+
+.st-scanglow {
+  fill: var(--st-leaf);
+  opacity: 0.12;
+}
+
+.st-lens-ring line {
+  stroke: var(--st-ocean);
+  stroke-width: 1.5;
+  opacity: 0.7;
+}
+
+.st-reticle line,
+.st-reticle-box {
+  stroke: #ffffff;
+  stroke-width: 1.5;
+  fill: none;
+  opacity: 0.85;
+}
+
+.st-reticle-box {
+  stroke-dasharray: 18 104;
+  stroke-dashoffset: 9;
+}
+
+.st-hud {
+  fill: var(--st-ocean);
+  font-family: var(--font-mono);
+  font-size: 19px;
+  opacity: 0;
+}
+
+.st-wave {
+  fill: none;
+  stroke: var(--st-leaf);
+  stroke-width: 3;
+  vector-effect: non-scaling-stroke;
+}
+
+.st-packet {
+  fill: var(--st-leaf);
+}
+
+.st-atmosphere {
+  fill: none;
+  stroke: rgb(108 184 240 / 0.35);
+  stroke-width: 10;
+}
+
+.st-dish-bowl {
+  fill: #dfe7ea;
+  stroke: #8aa1a8;
+  stroke-width: 1.5;
+}
+
+.st-dish-rim {
+  fill: #b8c6cb;
+  stroke: #8aa1a8;
+  stroke-width: 1.5;
+}
+
+.st-dish-strut {
+  stroke: #b8c6cb;
+  stroke-width: 3;
+}
+
+.st-dish-feed {
+  fill: var(--st-leaf);
+}
+
+.st-dish-neck,
+.st-dish-base {
+  fill: #8aa1a8;
+}
+
+.st-status rect,
+.st-card {
+  fill: rgb(6 20 27 / 0.88);
+  stroke: rgb(94 211 168 / 0.45);
+  stroke-width: 1.5;
+}
+
+.st-status text,
+.st-card-title {
+  fill: var(--st-ink);
+  font-family: var(--font-body);
+  font-size: 21px;
+  font-weight: 600;
+}
+
+.st-status .st-status-sub,
+.st-card-sub {
+  fill: var(--st-text);
+  font-size: 17px;
+  font-weight: 400;
+  font-family: var(--font-body);
+}
+
+.st-decoder-bg {
+  fill: #08202a;
+  stroke: rgb(108 184 240 / 0.3);
+  stroke-width: 2;
+}
+
+.st-panel-title {
+  fill: var(--st-ink);
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: 600;
+}
+
+.st-bin-label {
+  fill: var(--st-ocean);
+  font-family: var(--font-mono);
+  font-size: 17px;
+}
+
+.st-bin-row {
+  fill: rgb(185 211 204 / 0.45);
+  font-family: var(--font-mono);
+  font-size: 17px;
+}
+
+.st-bin-row.is-current {
+  fill: var(--st-leaf);
+}
+
+.st-frame {
+  fill: none;
+  stroke: rgb(234 247 243 / 0.5);
+  stroke-width: 2;
+}
+
+.st-frame-bg {
+  fill: #0b1d26;
+}
+
+.st-reveal-scan {
+  stroke: var(--st-leaf);
+  stroke-width: 3;
+}
+
+.st-band-label {
+  font-family: var(--font-mono);
+  font-size: 44px;
+}
+
+.st-formula {
+  fill: var(--st-ink);
+  font-family: var(--font-mono);
+  font-size: 24px;
+}
+
+.st-map-grid line {
+  stroke: rgb(30 58 58 / 0.18);
+  stroke-width: 1;
+}
+
+.st-aoi {
+  fill: none;
+  stroke: #1e3a3a;
+  stroke-width: 3;
+  stroke-dasharray: 10 6;
+}
+
+.st-coord {
+  fill: #1e3a3a;
+  font-family: var(--font-mono);
+  font-size: 17px;
+  font-weight: 500;
+}

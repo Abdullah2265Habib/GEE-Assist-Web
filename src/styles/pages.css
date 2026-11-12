@@ -413,3 +413,12 @@ main:focus {
 .cta-inner .btn-row {
   justify-content: center;
 }
+
+.story-placeholder {
+  height: 100vh;
+  background: #06141b;
+}
+
+.story + .section {
+  border-top: 0;
+}
