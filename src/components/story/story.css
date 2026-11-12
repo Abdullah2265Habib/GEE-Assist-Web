@@ -159,6 +159,13 @@
   .story-rail button {
     padding: 8px 0;
   }
+
+  .story-svg {
+    height: auto;
+    aspect-ratio: 4 / 3;
+    align-self: center;
+    overflow: visible;
+  }
 }
 
 /* Reduced motion: no pinning, every chapter written out, the last frame shown. */
