@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { BACKEND_GITHUB_URL, GITHUB_URL } from "../config";
+import OrbitBadge from "../components/orbit/OrbitBadge";
 
 const STACK: [string, string][] = [
   ["Desktop app", "Python, PyQt6 and Qt WebEngine for the map"],
@@ -20,9 +21,9 @@ export default function About() {
             require writing JavaScript?
           </p>
         </div>
-        <span className="globe-badge about-badge" aria-hidden="true">
-          <img src="/media/satellite-around-earth.gif" alt="" width={140} height={140} />
-        </span>
+        <div className="about-badge">
+          <OrbitBadge size={240} />
+        </div>
       </div>
 
       <div className="container doc-body about-body">

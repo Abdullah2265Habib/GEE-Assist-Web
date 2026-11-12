@@ -564,7 +564,8 @@
 
 .about-badge {
   flex: none;
-  padding: 10px;
+  width: 240px;
+  margin: -20px 0;
 }
 
 @media (max-width: 640px) {
@@ -934,6 +935,11 @@
 .auth-aside {
   padding-top: 24px;
   font-size: var(--text-sm);
+}
+
+.auth-orbit {
+  width: 220px;
+  margin: -10px 0 10px -16px;
 }
 
 .auth-aside .globe-badge {

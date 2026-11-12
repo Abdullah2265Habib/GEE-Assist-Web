@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import OrbitBadge from "../../components/orbit/OrbitBadge";
 
 /** Two-column frame for sign-in screens: the form, and a short note on what an account is for. */
 export default function AuthShell({ title, intro, children }: { title: string; intro?: ReactNode; children: ReactNode }) {
@@ -10,9 +11,9 @@ export default function AuthShell({ title, intro, children }: { title: string; i
         {children}
       </div>
       <aside className="auth-aside">
-        <span className="globe-badge" aria-hidden="true">
-          <img src="/media/satellite-around-earth.gif" alt="" width={120} height={120} />
-        </span>
+        <div className="auth-orbit">
+          <OrbitBadge size={220} />
+        </div>
         <h2>One account for the app and this site</h2>
         <ul>
           <li>Sign in to the GEE-Assist desktop app</li>

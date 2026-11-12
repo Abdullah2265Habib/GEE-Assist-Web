@@ -1,0 +1,164 @@
+.orbit-badge {
+  --ob-ocean: #1f6aa6;
+  --ob-ocean-hi: #5aa3d9;
+  --ob-land: #9fd08f;
+  --ob-land-edge: #2f7fc1;
+  --ob-glow: #6cb8f0;
+  --ob-orbit: #2f7fc1;
+  --ob-beam: #2e9e78;
+  --ob-star: #6b8582;
+  --ob-sat-body: #e9eef0;
+  --ob-sat-edge: #8aa1a8;
+  --ob-panel: #2f5f9e;
+  display: block;
+  max-width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+:root[data-theme="dark-green"] .orbit-badge {
+  --ob-ocean: #13405f;
+  --ob-ocean-hi: #2a73a6;
+  --ob-land: #5fb78f;
+  --ob-land-edge: #6cb8f0;
+  --ob-glow: #6cb8f0;
+  --ob-orbit: #6cb8f0;
+  --ob-beam: #5ed3a8;
+  --ob-star: #eaf7f3;
+}
+
+:root[data-theme="dark-grey"] .orbit-badge {
+  --ob-ocean: #2a3a46;
+  --ob-ocean-hi: #4d6476;
+  --ob-land: #7fa894;
+  --ob-land-edge: #9aa4ab;
+  --ob-glow: #9ec9ec;
+  --ob-orbit: #9aa4ab;
+  --ob-beam: #6fd3a8;
+  --ob-star: #f2f2f2;
+}
+
+.ob-stars circle {
+  fill: var(--ob-star);
+  opacity: 0.25;
+  animation: ob-twinkle 3s ease-in-out infinite;
+}
+
+@keyframes ob-twinkle {
+  0%,
+  100% {
+    opacity: 0.15;
+  }
+  50% {
+    opacity: 0.85;
+  }
+}
+
+.ob-atmo {
+  animation: ob-breathe 6s ease-in-out infinite;
+  transform-origin: 100px 100px;
+}
+
+@keyframes ob-breathe {
+  0%,
+  100% {
+    opacity: 0.75;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.04);
+  }
+}
+
+.ob-graticule {
+  fill: none;
+  stroke: rgb(255 255 255 / 0.14);
+  stroke-width: 0.35;
+}
+
+.ob-country {
+  fill: var(--ob-land);
+  stroke: var(--ob-land-edge);
+  stroke-opacity: 0.5;
+  stroke-width: 0.25;
+}
+
+.ob-limb {
+  fill: none;
+  stroke: var(--ob-glow);
+  stroke-opacity: 0.45;
+  stroke-width: 0.8;
+}
+
+.ob-orbit {
+  fill: none;
+  stroke: var(--ob-orbit);
+  stroke-opacity: 0.55;
+  stroke-width: 0.6;
+  stroke-dasharray: 1.5 2.5;
+}
+
+.ob-orbit-back {
+  stroke-opacity: 0.22;
+}
+
+.ob-ripple {
+  fill: none;
+  stroke: var(--ob-beam);
+  stroke-width: 0.9;
+}
+
+.ob-bit {
+  fill: var(--ob-beam);
+}
+
+.ob-panel {
+  fill: var(--ob-panel);
+  stroke: #9cc7f2;
+  stroke-width: 0.5;
+}
+
+.ob-strut {
+  stroke: var(--ob-sat-edge);
+  stroke-width: 0.8;
+}
+
+.ob-body {
+  fill: var(--ob-sat-body);
+  stroke: var(--ob-sat-edge);
+  stroke-width: 0.5;
+}
+
+.ob-lens {
+  fill: #0b1d26;
+  stroke: var(--ob-beam);
+  stroke-width: 0.5;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ob-stars circle,
+  .ob-atmo {
+    animation: none;
+  }
+}
+
+/* The imaging beam glows so it reads over land as well as ocean. */
+.ob-beam {
+  stroke: var(--ob-beam);
+  stroke-width: 0.5;
+  stroke-opacity: 0.9;
+  filter: drop-shadow(0 0 2px rgb(234 255 245 / 0.9));
+}
+
+.orbit-badge .ob-ripple {
+  stroke: #f4fff9;
+  stroke-width: 1.1;
+  filter: drop-shadow(0 0 1px var(--ob-beam));
+}
+
+.orbit-badge .ob-bit {
+  fill: #ffffff;
+  stroke: var(--ob-beam);
+  stroke-width: 0.4;
+}
