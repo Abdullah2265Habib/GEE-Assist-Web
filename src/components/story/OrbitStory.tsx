@@ -45,14 +45,19 @@ const EARTH = { cx: 600, cy: 520, r: 300 };
 const ORBIT = { rx: 470, ry: 120, tilt: (-14 * Math.PI) / 180 };
 const SAT_END_T = -0.3;
 const SAT_DOWN = { x: 600, y: 150 };
-const FEED = { x: 600, y: 492 };
+/** Where the dish head turns, and its feed horn (the point the camera dives into). */
+const PIVOT = { x: 600, y: 668 };
+const FEED = { x: 600, y: 506 };
 const FRAME = { x: 480, y: 230, size: 360 };
 const AOI = { x: 600, y: 300, size: 400 };
 const LENS = { cx: 600, cy: 450, r: 290 };
 const STRIP_SCALE = 4;
-const TOTAL = 6000;
+const TOTAL = 6500;
 const HOLD = 350;
 const BINARY_ROWS = 13;
+/** Where the split bands land: a column to the right of the picture. */
+const BAND_X = 380;
+const BAND_SIZE = 150;
 /** The rounded "screen" the decoder and the map are shown on. */
 const SCREEN = { x: 24, y: 24, w: W - 48, h: H - 48, r: 32 };
 
@@ -74,8 +79,22 @@ function orbitPath(from: number, to: number, steps = 80): string {
 }
 
 const SAT_END = orbitPoint(SAT_END_T);
+/** The satellite lens, in scene units, when the orbit ends (lens at y=22 in the shape, drawn at 0.9). */
+const SAT_LENS = { x: SAT_END[0], y: SAT_END[1] + 22 * 0.9, r: 6 * 0.9 };
+/** How far the camera magnifies to make the satellite lens fill the lens view. */
+const DIVE = LENS.r / SAT_LENS.r;
 const bits = (n: number) => n.toString(2).padStart(8, "0");
 const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
+
+/** Timeline time (ms) at which each chapter's scene begins; captions follow these. */
+const CHAPTER_STARTS = [0, 1000, 2500, 3100, 3950, 5400];
+const chapterAt = (t: number) => {
+  let c = 0;
+  CHAPTER_STARTS.forEach((start, i) => {
+    if (t + 60 >= start) c = i;
+  });
+  return c;
+};
 
 /* ----------------------------------------------------------- satellite */
 
@@ -168,8 +187,8 @@ export default function OrbitStory() {
 
     const updateFromTime = (t: number) => {
       drawEarth(-60 + (t / 2600) * 110);
-      drawDecoder(clamp01((t - 4300) / 600));
-      const c = Math.min(CHAPTERS.length - 1, Math.max(0, Math.floor((t + 120) / 1000)));
+      drawDecoder(clamp01((t - 4250) / 500));
+      const c = chapterAt(t);
       if (c !== chapterRef.current) {
         chapterRef.current = c;
         setChapter(c);
@@ -185,59 +204,94 @@ export default function OrbitStory() {
       tlRef.current = tl;
       const motion = animeSvg.createMotionPath($(".st-satpath"));
 
+      /* Starting state of everything that appears later, set at time 0 so that a remount
+         or scrolling back to the top always shows the orbit scene alone. */
+      tl.set($(".st-lens"), { opacity: 0, translateX: SAT_LENS.x - LENS.cx, translateY: SAT_LENS.y - LENS.cy, scale: 1 / DIVE }, 0)
+        .set($(".st-ground"), { opacity: 0, scale: 1 }, 0)
+        .set($(".st-downlink"), { opacity: 0 }, 0)
+        .set($(".st-horizon"), { translateY: 320 }, 0)
+        .set($(".st-dish"), { translateY: 460 }, 0)
+        .set($(".st-dish-head"), { rotate: -38 }, 0)
+        .set($(".st-status"), { opacity: 0 }, 0)
+        .set($$(".st-wave"), { opacity: 0 }, 0)
+        .set($$(".st-packet"), { opacity: 0 }, 0)
+        .set($$(".st-hud"), { opacity: 0 }, 0)
+        .set($(".st-decoder"), { opacity: 0 }, 0)
+        .set($$(".st-band"), { opacity: 0, translateX: 0, translateY: 0, scale: 1 }, 0)
+        .set($(".st-ndvi"), { opacity: 0 }, 0)
+        .set($(".st-formula"), { opacity: 0 }, 0)
+        .set($(".st-map"), { opacity: 0 }, 0)
+        .set($$(".st-map-late"), { opacity: 0 }, 0);
+
       /* 1 · In orbit */
-      tl.add($(".st-sat-orbit"), { ...motion, duration: 1050, ease: "inOutSine" }, 0)
+      tl.add($(".st-sat-orbit"), { translateX: motion.translateX, translateY: motion.translateY, duration: 1050, ease: "inOutSine" }, 0)
         .add(animeSvg.createDrawable($$(".st-orbit-trail")), { draw: ["0 0", "0 1"], duration: 1050, ease: "inOutSine" }, 0)
 
-        /* 2 · Through the lens */
-        .add($(".st-world"), { translateX: [0, LENS.cx - SAT_END[0]], translateY: [0, LENS.cy - SAT_END[1]], scale: [1, 7], opacity: [1, 0], duration: 650, ease: "inQuad" }, 1050)
-        .add($(".st-lens"), { scale: [0.25, 1], opacity: [0, 1], duration: 450, ease: "outQuad" }, 1420)
-        .add($(".st-strip"), { translateY: [0, -(scene.stripHeight * STRIP_SCALE - 2 * LENS.r - 40)], duration: 1300, ease: "linear" }, 1250)
-        .add($(".st-lens-ring"), { rotate: [0, 120], duration: 1300, ease: "linear" }, 1250)
-        .add($(".st-lens-scan"), { translateY: [-LENS.r, LENS.r, -LENS.r, LENS.r], duration: 1000, ease: "linear" }, 1500)
-        .add($$(".st-hud"), { opacity: [0, 1], translateY: [12, 0], duration: 250, delay: stagger(60) }, 1650)
+        /* 2 · Through the lens: dive into the satellite lens. The world and the lens view share
+           one transform (same ease, same timing), so the tiny lens grows into the lens view. */
+        .add($(".st-world"), {
+          translateX: [0, LENS.cx - SAT_LENS.x],
+          translateY: [0, LENS.cy - SAT_LENS.y],
+          scale: [1, DIVE],
+          duration: 850,
+          ease: "inCubic",
+        }, 1050)
+        .add($(".st-lens"), { opacity: [0, 1], duration: 80, ease: "linear" }, 1050)
+        .add($(".st-lens"), {
+          translateX: [SAT_LENS.x - LENS.cx, 0],
+          translateY: [SAT_LENS.y - LENS.cy, 0],
+          scale: [1 / DIVE, 1],
+          duration: 850,
+          ease: "inCubic",
+        }, 1050)
+        .add($(".st-world"), { opacity: [1, 0], duration: 120, ease: "linear" }, 1780)
+        .add($(".st-strip"), { translateY: [0, -(scene.stripHeight * STRIP_SCALE - 2 * LENS.r - 40)], duration: 1450, ease: "linear" }, 1100)
+        .add($(".st-lens-ring"), { rotate: [0, 120], duration: 1450, ease: "linear" }, 1100)
+        .add($(".st-lens-scan"), { translateY: [-LENS.r, LENS.r, -LENS.r, LENS.r], duration: 700, ease: "linear" }, 1850)
+        .add($$(".st-hud"), { opacity: [0, 1], translateY: [12, 0], duration: 220, delay: stagger(50) }, 1900)
 
         /* 3 · Down to Earth */
-        .add($(".st-lens"), { scale: [1, 0.12], translateY: [0, SAT_DOWN.y - LENS.cy], opacity: [1, 0], duration: 450, ease: "inQuad" }, 2500)
-        .add($(".st-ground"), { opacity: [0, 1], duration: 120 }, 2650)
-        .add($(".st-downlink"), { opacity: [0, 1], duration: 250 }, 2780)
-        .add($(".st-horizon"), { translateY: [260, 0], duration: 450, ease: "outQuad" }, 2700)
-        .add($$(".st-wave"), { scale: [0.15, 5.4], opacity: [0, 0.9, 0], duration: 520, delay: stagger(95) }, 2880)
+        .add($(".st-lens"), { scale: [1, 0.12], translateY: [0, SAT_DOWN.y - LENS.cy], opacity: [1, 0], duration: 450, ease: "inQuad" }, 2550)
+        .add($(".st-ground"), { opacity: [0, 1], duration: 120 }, 2700)
+        .add($(".st-downlink"), { opacity: [0, 1], duration: 250 }, 2800)
+        .add($(".st-horizon"), { translateY: [320, 0], duration: 450, ease: "outQuad" }, 2700)
+        .add($$(".st-wave"), { scale: [0.15, 5.6], opacity: [0, 0.9, 0], duration: 520, delay: stagger(95) }, 2880)
 
-        /* 4 · Caught on the ground */
-        .add($(".st-dish"), { translateY: [440, 0], duration: 450, ease: "outBack(1.4)" }, 3000)
-        .add($$(".st-wave"), { scale: [0.15, 5.4], opacity: [0, 0.9, 0], duration: 520, delay: stagger(95) }, 3450)
-        .add($$(".st-packet"), { translateY: [0, FEED.y - SAT_DOWN.y - 30], opacity: [0, 1, 1, 0], duration: 360, delay: stagger(55) }, 3300)
-        .add($(".st-dish-body"), { rotate: [0, -8, 6, -4, 2, 0], translateY: [0, -18, 0, -10, 0, 0], duration: 850, ease: "inOutSine" }, 3200)
-        .add($(".st-status"), { opacity: [0, 1], translateY: [10, 0], duration: 250 }, 3350)
+        /* 4 · Caught on the ground: the dish rises, then its head swings round to track the
+           satellite and settles, while the pedestal stays put. */
+        .add($(".st-dish"), { translateY: [460, 0], duration: 420, ease: "outQuad" }, 2950)
+        .add($(".st-dish-head"), { rotate: [-38, 14, -8, 4, -2, 0], duration: 950, ease: "inOutSine" }, 3150)
+        .add($$(".st-wave"), { scale: [0.15, 5.6], opacity: [0, 0.9, 0], duration: 520, delay: stagger(95) }, 3450)
+        .add($$(".st-packet"), { translateY: [0, FEED.y - SAT_DOWN.y - 40], opacity: [0, 1, 1, 0], duration: 360, delay: stagger(55) }, 3450)
+        .add($(".st-status"), { opacity: [0, 1], translateY: [10, 0], duration: 250 }, 3400)
 
-        /* 5 · Decoded into bands */
-        .add($(".st-ground"), { scale: [1, 6], opacity: [1, 0], duration: 420, ease: "inQuad" }, 4000)
-        .add($(".st-decoder"), { opacity: [0, 1], duration: 250 }, 4200)
+        /* 5 · Decoded into bands: dive into the feed horn, decode, split the bands out. */
+        .add($(".st-ground"), { scale: [1, 6], opacity: [1, 0], duration: 400, ease: "inQuad" }, 4000)
+        .add($(".st-decoder"), { opacity: [0, 1], duration: 220 }, 4180)
         .add($$(".st-band"), {
-          translateX: [0, 420],
+          translateX: [0, BAND_X],
           translateY: stagger(170, { start: -110 }),
-          scale: [1, 150 / FRAME.size],
+          scale: [1, BAND_SIZE / FRAME.size],
           opacity: [0, 1],
-          duration: 380,
-          delay: stagger(70),
+          duration: 320,
+          delay: stagger(50),
           ease: "outQuad",
-        }, 4900)
+        }, 4800)
 
-        /* 6 · Turned into answers */
-        .add($$(".st-band"), { translateX: 120, translateY: stagger(170, { start: -110 }), opacity: 0, duration: 300, delay: stagger(50) }, 5150)
-        .add($(".st-ndvi"), { opacity: [0, 1], duration: 250 }, 5250)
-        .add($(".st-formula"), { opacity: [0, 1], translateY: [10, 0], duration: 200 }, 5200)
-        .add($$(".st-decoder-chrome"), { opacity: [1, 0], duration: 250 }, 5450)
-        .add($(".st-map"), { opacity: [0, 1], duration: 300 }, 5450)
+        /* 6 · Turned into answers: the bands slide back into the picture and NDVI appears. */
+        .add($$(".st-band"), { translateX: 0, translateY: 0, scale: 1, opacity: 0, duration: 300, delay: stagger(45), ease: "inQuad" }, 5450)
+        .add($(".st-formula"), { opacity: [0, 1], translateY: [10, 0], duration: 200 }, 5500)
+        .add($(".st-ndvi"), { opacity: [0, 1], duration: 260 }, 5600)
+        .add($$(".st-decoder-chrome"), { opacity: [1, 0], duration: 250 }, 5950)
+        .add($(".st-map"), { opacity: [0, 1], duration: 300 }, 5950)
         .add($(".st-result"), {
           translateX: [0, AOI.x - FRAME.x],
           translateY: [0, AOI.y - FRAME.y],
           scale: [1, AOI.size / FRAME.size],
           duration: 420,
           ease: "inOutCubic",
-        }, 5500)
-        .add($$(".st-map-late"), { opacity: [0, 1], translateY: [10, 0], duration: 250, delay: stagger(60) }, 5800)
+        }, 6000)
+        .add($$(".st-map-late"), { opacity: [0, 1], translateY: [10, 0], duration: 250, delay: stagger(60) }, 6300)
         .add({ duration: HOLD }, TOTAL);
 
       if (reduced) tl.seek(tl.duration);
@@ -256,10 +310,9 @@ export default function OrbitStory() {
     if (!root) return;
     const top = root.getBoundingClientRect().top + window.scrollY;
     const range = root.offsetHeight - window.innerHeight;
-    window.scrollTo({ top: top + (range * (i * 1000 + 150)) / (TOTAL + HOLD), behavior: "smooth" });
+    window.scrollTo({ top: top + (range * (CHAPTER_STARTS[i] + 150)) / (TOTAL + HOLD), behavior: "smooth" });
   };
 
-  const [satX, satY] = SAT_END;
   const binaryRows = Array.from({ length: BINARY_ROWS });
 
   return (
@@ -299,8 +352,12 @@ export default function OrbitStory() {
               <stop offset="80%" stopColor="#6cb8f0" stopOpacity="0.35" />
               <stop offset="100%" stopColor="#6cb8f0" stopOpacity="0" />
             </radialGradient>
+            <linearGradient id="st-sky-glow" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#5ed3a8" stopOpacity="0" />
+              <stop offset="100%" stopColor="#5ed3a8" stopOpacity="0.16" />
+            </linearGradient>
             <linearGradient id="st-ground-fill" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#2c5e4c" />
+              <stop offset="0%" stopColor="#1d4a40" />
               <stop offset="100%" stopColor="#0d2621" />
             </linearGradient>
             <linearGradient id="st-ndvi-ramp" x1="0" y1="0" x2="1" y2="0">
@@ -330,7 +387,7 @@ export default function OrbitStory() {
           </g>
 
           {/* 1 · Earth and orbit */}
-          <g className="st-world" style={{ transformOrigin: `${satX}px ${satY}px` }}>
+          <g className="st-world" style={{ transformOrigin: `${SAT_LENS.x}px ${SAT_LENS.y}px` }}>
             <circle cx={EARTH.cx} cy={EARTH.cy} r={EARTH.r + 26} fill="url(#st-glow)" />
             <path className="st-orbit-back" d={orbitPath(0, -Math.PI)} />
             <circle cx={EARTH.cx} cy={EARTH.cy} r={EARTH.r} fill="url(#st-ocean)" />
@@ -349,7 +406,7 @@ export default function OrbitStory() {
           </g>
 
           {/* 2 · Lens view */}
-          <g className="st-lens" style={{ transformOrigin: `${LENS.cx}px ${LENS.cy}px`, opacity: 0 }}>
+          <g className="st-lens" style={{ transformOrigin: `${LENS.cx}px ${LENS.cy}px` }}>
             <circle cx={LENS.cx} cy={LENS.cy} r={LENS.r + 18} className="st-lens-bezel" />
             <g clipPath="url(#st-lens-clip)">
               <image
@@ -392,49 +449,74 @@ export default function OrbitStory() {
           </g>
 
           {/* 3 + 4 · Downlink and ground station */}
-          <g className="st-ground" style={{ transformOrigin: `${FEED.x}px ${FEED.y}px`, opacity: 0 }}>
-            <g className="st-downlink" style={{ opacity: 0 }}>
+          <g className="st-ground" style={{ transformOrigin: `${FEED.x}px ${FEED.y}px` }}>
+            <g className="st-downlink">
               <g className="st-waves">
                 {[0, 1, 2, 3, 4].map((i) => (
-                  <use key={i} href="#st-wave-shape" className="st-wave" x={SAT_DOWN.x} y={SAT_DOWN.y + 20} style={{ transformOrigin: `${SAT_DOWN.x}px ${SAT_DOWN.y + 20}px`, opacity: 0 }} />
+                  <use key={i} href="#st-wave-shape" className="st-wave" x={SAT_DOWN.x} y={SAT_DOWN.y + 20} style={{ transformOrigin: `${SAT_DOWN.x}px ${SAT_DOWN.y + 20}px` }} />
                 ))}
               </g>
               <g className="st-packets">
                 {Array.from({ length: 8 }).map((_, i) => (
-                  <rect key={i} className="st-packet" x={SAT_DOWN.x - 7 + ((i % 3) - 1) * 18} y={SAT_DOWN.y + 30} width={14} height={9} rx={2} style={{ opacity: 0 }} />
+                  <rect key={i} className="st-packet" x={SAT_DOWN.x - 7 + ((i % 3) - 1) * 18} y={SAT_DOWN.y + 30} width={14} height={9} rx={2} />
                 ))}
               </g>
               <g transform={`translate(${SAT_DOWN.x} ${SAT_DOWN.y}) scale(1.25)`}>
                 <SatelliteShape />
               </g>
             </g>
-            <g className="st-horizon" style={{ transform: "translateY(260px)" }}>
-              <circle cx={600} cy={1215} r={560} fill="url(#st-ground-fill)" />
-              <circle cx={600} cy={1215} r={560} className="st-atmosphere" />
+            <g className="st-horizon">
+              <rect x={-600} y={540} width={2400} height={260} fill="url(#st-sky-glow)" />
+              <path className="st-land-far" d="M -600 700 C -300 650 -100 690 100 668 S 400 618 560 648 S 900 640 1050 612 S 1400 652 1800 628 L 1800 1600 L -600 1600 Z" />
+              <path className="st-land-mid" d="M -600 734 C -300 714 0 734 200 721 S 500 700 700 717 S 1000 704 1200 721 S 1600 709 1800 719 L 1800 1600 L -600 1600 Z" />
+              <path className="st-land-near" d="M -600 760 Q 600 738 1800 760 L 1800 1600 L -600 1600 Z" />
+              <path className="st-land-road" d="M 640 749 Q 760 752 900 751" />
+              {/* control building with lit windows */}
+              <rect className="st-building" x={792} y={706} width={116} height={44} rx={3} />
+              <rect className="st-building-roof" x={786} y={700} width={128} height={8} rx={2} />
+              {[0, 1, 2, 3].map((i) => (
+                <rect key={i} className="st-window" x={806 + i * 25} y={720} width={14} height={9} rx={1.5} />
+              ))}
+              <line className="st-mast" x1={890} y1={700} x2={890} y2={672} />
+              <circle className="st-mast-light" cx={890} cy={670} r={3.5} />
+              {/* a smaller dish */}
+              <line className="st-mast" x1={396} y1={751} x2={396} y2={722} />
+              <path className="st-small-dish" d="M 372 708 Q 396 736 420 708 Z" transform="rotate(-24 396 716)" />
+              {/* trees */}
+              {[[226, 756, 15], [254, 758, 11], [1000, 756, 13], [1026, 758, 17], [1058, 760, 10]].map(([x, y, r], i) => (
+                <g key={i}>
+                  <line className="st-trunk" x1={x} y1={y} x2={x} y2={y - r * 1.4} />
+                  <circle className="st-tree" cx={x} cy={y - r * 1.6} r={r} />
+                </g>
+              ))}
             </g>
-            <g className="st-dish" style={{ transform: "translateY(440px)" }}>
-              <g className="st-dish-body" style={{ transformOrigin: "600px 700px" }}>
-                <g transform="translate(600 612)">
-                  <line className="st-dish-strut" x1={-92} y1={-28} x2={0} y2={-120} />
-                  <line className="st-dish-strut" x1={92} y1={-28} x2={0} y2={-120} />
-                  <line className="st-dish-strut" x1={0} y1={18} x2={0} y2={-120} />
-                  <path className="st-dish-bowl" d="M -125 -30 Q 0 85 125 -30 Z" />
-                  <ellipse className="st-dish-rim" cx={0} cy={-30} rx={125} ry={20} />
-                  <circle className="st-dish-feed" cx={0} cy={-122} r={9} />
-                  <rect className="st-dish-neck" x={-14} y={22} width={28} height={70} />
+            <g className="st-dish">
+              <path className="st-dish-base" d="M 554 750 L 646 750 L 630 722 L 570 722 Z" />
+              <rect className="st-dish-neck" x={589} y={PIVOT.y} width={22} height={56} />
+              <g className="st-dish-head" style={{ transformOrigin: `${PIVOT.x}px ${PIVOT.y}px` }}>
+                <g transform={`translate(${PIVOT.x} ${PIVOT.y})`}>
+                  <rect className="st-dish-neck" x={-9} y={-24} width={18} height={24} />
+                  <path className="st-dish-bowl" d="M -132 -74 Q 0 42 132 -74 Z" />
+                  <ellipse className="st-dish-rim" cx={0} cy={-74} rx={132} ry={21} />
+                  <ellipse className="st-dish-inner" cx={0} cy={-72} rx={112} ry={15} />
+                  <line className="st-dish-strut" x1={-104} y1={-72} x2={0} y2={-160} />
+                  <line className="st-dish-strut" x1={104} y1={-72} x2={0} y2={-160} />
+                  <line className="st-dish-strut" x1={0} y1={-66} x2={0} y2={-160} />
+                  <rect className="st-dish-horn" x={-8} y={-172} width={16} height={14} rx={3} />
+                  <circle className="st-dish-feed" cx={0} cy={FEED.y - PIVOT.y} r={6} />
                 </g>
               </g>
-              <path className="st-dish-base" d="M 545 712 L 655 712 L 640 690 L 560 690 Z" />
+              <circle className="st-dish-hinge" cx={PIVOT.x} cy={PIVOT.y} r={8} />
             </g>
-            <g className="st-status" style={{ opacity: 0 }}>
-              <rect x={760} y={560} width={330} height={78} rx={12} />
-              <text x={782} y={592}>Receiving · 4 MB pieces</text>
-              <text x={782} y={620} className="st-status-sub">8 at a time · written to disk on arrival</text>
+            <g className="st-status">
+              <rect x={760} y={540} width={330} height={78} rx={12} />
+              <text x={782} y={572}>Receiving · 4 MB pieces</text>
+              <text x={782} y={600} className="st-status-sub">8 at a time · written to disk on arrival</text>
             </g>
           </g>
 
           {/* 6 · Map */}
-          <g className="st-map" style={{ opacity: 0 }} clipPath="url(#st-screen-clip)">
+          <g className="st-map" clipPath="url(#st-screen-clip)">
             <image href={scene.basemap} x={0} y={0} width={W} height={H} preserveAspectRatio="none" />
             <g className="st-map-grid">
               {[1, 2, 3, 4, 5].map((i) => (
@@ -447,7 +529,7 @@ export default function OrbitStory() {
             <rect x={AOI.x} y={AOI.y} width={AOI.size} height={AOI.size} className="st-aoi" />
           </g>
           {/* 5 · Decoder */}
-          <g className="st-decoder" style={{ opacity: 0 }}>
+          <g className="st-decoder">
             <g className="st-decoder-chrome">
               <rect x={SCREEN.x} y={SCREEN.y} width={SCREEN.w} height={SCREEN.h} rx={SCREEN.r} className="st-decoder-bg" />
               <text className="st-panel-title" x={70} y={190}>Decoding downlink</text>
@@ -461,12 +543,12 @@ export default function OrbitStory() {
             <g className="st-result" style={{ transformOrigin: `${FRAME.x}px ${FRAME.y}px` }}>
               <rect x={FRAME.x - 1} y={FRAME.y - 1} width={FRAME.size + 2} height={FRAME.size + 2} className="st-frame-bg" />
               <image href={scene.trueColor} x={FRAME.x} y={FRAME.y} width={FRAME.size} height={FRAME.size} clipPath="url(#st-reveal-clip)" style={{ imageRendering: "pixelated" }} />
-              <image className="st-ndvi" href={scene.ndvi} x={FRAME.x} y={FRAME.y} width={FRAME.size} height={FRAME.size} style={{ imageRendering: "pixelated", opacity: 0 }} />
+              <image className="st-ndvi" href={scene.ndvi} x={FRAME.x} y={FRAME.y} width={FRAME.size} height={FRAME.size} style={{ imageRendering: "pixelated" }} />
               <line className="st-reveal-scan" x1={FRAME.x - 10} x2={FRAME.x + FRAME.size + 10} y1={FRAME.y} y2={FRAME.y} />
               <rect x={FRAME.x} y={FRAME.y} width={FRAME.size} height={FRAME.size} className="st-frame" />
             </g>
             {scene.bands.map((b) => (
-              <g key={b.id} className="st-band" style={{ transformOrigin: `${FRAME.x}px ${FRAME.y}px`, opacity: 0 }}>
+              <g key={b.id} className="st-band" style={{ transformOrigin: `${FRAME.x}px ${FRAME.y}px` }}>
                 <image href={b.url} x={FRAME.x} y={FRAME.y} width={FRAME.size} height={FRAME.size} style={{ imageRendering: "pixelated" }} />
                 <rect x={FRAME.x} y={FRAME.y} width={FRAME.size} height={FRAME.size} className="st-frame" style={{ stroke: b.colour }} />
                 <text x={FRAME.x + FRAME.size + 30} y={FRAME.y + FRAME.size / 2 + 14} className="st-band-label" style={{ fill: b.colour }}>
@@ -474,27 +556,27 @@ export default function OrbitStory() {
                 </text>
               </g>
             ))}
-            <text className="st-formula st-decoder-chrome" x={FRAME.x + FRAME.size / 2} y={FRAME.y + FRAME.size + 60} textAnchor="middle" style={{ opacity: 0 }}>
+            <text className="st-formula st-decoder-chrome" x={FRAME.x + FRAME.size / 2} y={FRAME.y + FRAME.size + 60} textAnchor="middle">
               NDVI = (B8 − B4) / (B8 + B4)
             </text>
           </g>
 
           {/* The result sits above the map once it lands in the area box. */}
           <g className="st-map-late-layer">
-            <g className="st-map-late" style={{ opacity: 0 }}>
+            <g className="st-map-late">
               <text className="st-coord" x={AOI.x} y={AOI.y + AOI.size + 28} textAnchor="middle">74.20° E</text>
               <text className="st-coord" x={AOI.x + AOI.size} y={AOI.y + AOI.size + 28} textAnchor="middle">74.45° E</text>
               <text className="st-coord" x={AOI.x - 12} y={AOI.y + 6} textAnchor="end">31.60° N</text>
               <text className="st-coord" x={AOI.x - 12} y={AOI.y + AOI.size + 6} textAnchor="end">31.40° N</text>
             </g>
-            <g className="st-map-late" style={{ opacity: 0 }}>
+            <g className="st-map-late">
               <rect x={60} y={740} width={340} height={100} rx={12} className="st-card" />
               <text x={80} y={772} className="st-card-title">NDVI</text>
               <rect x={80} y={786} width={300} height={14} rx={3} fill="url(#st-ndvi-ramp)" />
               <text x={80} y={822} className="st-card-sub">−0.4 water</text>
               <text x={380} y={822} className="st-card-sub" textAnchor="end">0.75 dense crops</text>
             </g>
-            <g className="st-map-late" style={{ opacity: 0 }}>
+            <g className="st-map-late">
               <rect x={60} y={60} width={660} height={84} rx={12} className="st-card" />
               <text x={84} y={96} className="st-card-title">Sentinel-2_74.3250_31.5000_2024-06-01_2024-08-31.tif</text>
               <text x={84} y={124} className="st-card-sub">Saved · NDVI · float32 GeoTIFF · EPSG:4326</text>

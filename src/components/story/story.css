@@ -9,7 +9,7 @@
   --st-ocean: #6cb8f0;
   --st-line: rgb(234 247 243 / 0.14);
   position: relative;
-  height: 700vh;
+  height: 760vh;
   background: var(--st-bg);
   color: var(--st-text);
 }
@@ -371,8 +371,71 @@
 }
 
 .st-dish-neck,
-.st-dish-base {
+.st-dish-base,
+.st-dish-hinge {
   fill: #8aa1a8;
+}
+
+.st-dish-inner {
+  fill: #a3b3b8;
+}
+
+.st-dish-horn {
+  fill: #dfe7ea;
+  stroke: #8aa1a8;
+  stroke-width: 1.5;
+}
+
+.st-land-far {
+  fill: #0f2a2a;
+}
+
+.st-land-mid {
+  fill: #143a34;
+}
+
+.st-land-near {
+  fill: url(#st-ground-fill);
+}
+
+.st-land-road {
+  fill: none;
+  stroke: rgb(185 211 204 / 0.25);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+.st-building {
+  fill: #1b3833;
+  stroke: #2f5a52;
+  stroke-width: 1.5;
+}
+
+.st-building-roof {
+  fill: #2f5a52;
+}
+
+.st-window {
+  fill: #f0c25c;
+  opacity: 0.85;
+}
+
+.st-mast,
+.st-trunk {
+  stroke: #6f8a85;
+  stroke-width: 2.5;
+}
+
+.st-mast-light {
+  fill: #ff8f80;
+}
+
+.st-small-dish {
+  fill: #b8c6cb;
+}
+
+.st-tree {
+  fill: #1f4f42;
 }
 
 .st-status rect,
@@ -444,7 +507,7 @@
 
 .st-band-label {
   font-family: var(--font-mono);
-  font-size: 44px;
+  font-size: 40px;
 }
 
 .st-formula {

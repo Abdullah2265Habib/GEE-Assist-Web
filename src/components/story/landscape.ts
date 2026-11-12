@@ -180,7 +180,7 @@ export function buildScene(): Scene {
       { id: "B4", label: "B4 · red", colour: "#ff6b5e", url: render(size, size, cx, cy, band("r", [255, 90, 80])) },
       { id: "B3", label: "B3 · green", colour: "#6fe38f", url: render(size, size, cx, cy, band("g", [90, 255, 130])) },
       { id: "B2", label: "B2 · blue", colour: "#6cb8f0", url: render(size, size, cx, cy, band("b", [90, 160, 255])) },
-      { id: "B8", label: "B8 · near-infrared", colour: "#d7a6ff", url: render(size, size, cx, cy, band("nir", [225, 170, 255])) },
+      { id: "B8", label: "B8 · near-IR", colour: "#d7a6ff", url: render(size, size, cx, cy, band("nir", [225, 170, 255])) },
     ],
     ndvi: render(size, size, cx, cy, (p) => lerpColor(NDVI_STOPS, ndviOf(p))),
     basemap: render(WORLD_W, WORLD_H, 0, 0, (p) => BASEMAP[p.cls]),
