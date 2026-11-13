@@ -38,8 +38,8 @@ export default function Features() {
             request, and brings the result to your disk in pieces Earth Engine will accept.
           </p>
           <p className="features-hero-note">
-            This tile is the kind of area it downloads. Turn it, point at it, switch the analysis, and pull
-            it apart into the bands each analysis is computed from.
+            This tile is the kind of area it downloads. Turn it, point at it, switch the analysis, mask the
+            clouds, and pull it apart into the bands each analysis is computed from.
           </p>
         </div>
         <Suspense fallback={<div className="t3d-placeholder" aria-hidden="true" />}>

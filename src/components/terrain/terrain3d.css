@@ -73,6 +73,72 @@
   font-variant-numeric: tabular-nums;
 }
 
+.t3d-where {
+  margin-top: 4px;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--subtle);
+}
+
+.t3d-frame {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 10px 5px 5px;
+  border-radius: 99px;
+  background: color-mix(in srgb, var(--surface) 80%, transparent);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(6px);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--text);
+  pointer-events: none;
+}
+
+.t3d-compass {
+  width: 30px;
+  height: 30px;
+}
+
+.t3d-compass svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.t3d-compass circle {
+  fill: none;
+  stroke: var(--border-strong);
+  stroke-width: 1.5;
+}
+
+.t3d-compass .n {
+  fill: var(--error);
+}
+
+.t3d-compass .s {
+  fill: var(--subtle);
+}
+
+.t3d-compass text {
+  font-family: var(--font-body);
+  font-size: 8px;
+  font-weight: 700;
+  fill: var(--ink);
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+
+.t3d-toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
 .t3d-bands {
   position: absolute;
   top: 12px;
@@ -113,9 +179,8 @@
 
 .t3d-hint {
   position: absolute;
-  left: 50%;
+  left: 12px;
   bottom: 14px;
-  transform: translateX(-50%);
   padding: 6px 12px;
   border-radius: 99px;
   background: color-mix(in srgb, var(--surface) 80%, transparent);
@@ -207,7 +272,7 @@
 }
 
 .t3d-legend-lst i {
-  background: linear-gradient(90deg, #2c5fa8, #7cc1d8 30%, #f2d06b 53%, #e8743a 77%, #b8232b);
+  background: linear-gradient(90deg, #283f8f, #4f8fd0 33%, #9fd3d8 54%, #f2d06b 70%, #e8743a 85%, #b8232b);
 }
 
 @keyframes t3d-in {
@@ -220,10 +285,10 @@
 @keyframes t3d-nudge {
   0%,
   100% {
-    transform: translateX(-50%);
+    transform: none;
   }
   50% {
-    transform: translateX(calc(-50% + 8px));
+    transform: translateX(8px);
   }
 }
 
