@@ -60,6 +60,17 @@
   --ob-star: #ffffff;
 }
 
+:root[data-theme="aurora"] .orbit-badge {
+  --ob-ocean: #101a38;
+  --ob-ocean-hi: #2c3a72;
+  --ob-land: #2f7a68;
+  --ob-land-edge: #a68bff;
+  --ob-glow: #3ee6a0;
+  --ob-orbit: #a68bff;
+  --ob-beam: #3ee6a0;
+  --ob-star: #e9eeff;
+}
+
 .ob-stars circle {
   fill: var(--ob-star);
   opacity: 0.25;

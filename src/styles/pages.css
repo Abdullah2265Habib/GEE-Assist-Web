@@ -272,7 +272,8 @@ main:focus {
 
 :root[data-theme="dark-grey"] .band-dark,
 :root[data-theme="dark-green"] .band-dark,
-:root[data-theme="navy"] .band-dark {
+:root[data-theme="navy"] .band-dark,
+:root[data-theme="aurora"] .band-dark {
   background: var(--page-2);
 }
 

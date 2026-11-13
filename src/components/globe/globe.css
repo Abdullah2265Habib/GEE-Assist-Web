@@ -42,6 +42,14 @@
   --globe-selected: #ffffff;
 }
 
+:root[data-theme="aurora"] .globe {
+  --globe-ocean: #101a38;
+  --globe-ocean-hi: #24305e;
+  --globe-land: #2b5a55;
+  --globe-land-stroke: #a68bff;
+  --globe-selected: #3ee6a0;
+}
+
 .globe-svg {
   width: 100%;
   height: auto;

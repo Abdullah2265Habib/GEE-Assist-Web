@@ -13,7 +13,7 @@
       // Apply the saved theme before React renders so the page never flashes.
       try {
         var t = localStorage.getItem("gee-assist-theme");
-        if (["light", "dark-green", "dark-grey", "earth", "navy"].indexOf(t) !== -1) {
+        if (["light", "dark-green", "dark-grey", "earth", "navy", "aurora"].indexOf(t) !== -1) {
           document.documentElement.setAttribute("data-theme", t);
         } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
           document.documentElement.setAttribute("data-theme", "dark-green");

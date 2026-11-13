@@ -248,8 +248,8 @@ export default function Home() {
             <h2>Pick a theme</h2>
             <p>
               On first start GEE-Assist asks for a theme: light, dark blue-green or dark grey. Each has its own icon for the
-              window and taskbar. This website has those three plus two of its own: ocean, forest and sand, and navy and
-              sand. Pick one here and the site switches with it.
+              window and taskbar. This website has those three plus three of its own: ocean, forest and sand; navy and
+              sand; and aurora, a polar-night palette. Pick one here and the site switches with it.
             </p>
           </div>
           <ThemePicker />

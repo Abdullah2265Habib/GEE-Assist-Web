@@ -211,6 +211,10 @@
   background: conic-gradient(from 45deg, #0f2347 0 120deg, #ffffff 120deg 240deg, #e6d3a8 240deg 360deg);
 }
 
+.swatch-aurora {
+  background: linear-gradient(135deg, #0b1020 0 38%, #3ee6a0 38% 66%, #a68bff 66% 100%);
+}
+
 .theme-swatch[aria-checked="true"] {
   box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--ocean);
 }

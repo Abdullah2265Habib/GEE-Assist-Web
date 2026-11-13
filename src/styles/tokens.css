@@ -2,7 +2,8 @@
    (frontend/palette.py in GEE-Assist) so the website and the app look like
    one product. Three themes, as in the app: light, dark blue-green, dark grey.
    Two more are website-only: "earth" (ocean blue, forest green, desert sand)
-   and "navy" (navy blue, white, desert sand). */
+   "navy" (navy blue, white, desert sand) and "aurora" (polar night: midnight
+   blue with aurora green and violet). */
 
 :root {
   --surface: #ffffff;
@@ -185,6 +186,44 @@
   --terminal-muted: #8794ac;
   --terminal-blue: #ffffff;
   --star: #e6c27a;
+  color-scheme: dark;
+}
+
+:root[data-theme="aurora"] {
+  --surface: #141b33;
+  --page: #0b1020;
+  --page-2: #0f1530;
+  --ink: #f2f5ff;
+  --text: #d5dcf0;
+  --muted: #a3abc8;
+  --subtle: #7c85a6;
+  --border: #252f52;
+  --border-strong: #38447a;
+  --field: #0e1429;
+  --leaf: #3ee6a0;
+  --leaf-dark: #7af0c0;
+  --ocean: #a68bff;
+  --ocean-dark: #c3b1ff;
+  --mint: #15302e;
+  --sky: #1d1d44;
+  --foam: #19213d;
+  --header-green: #12282f;
+  --header-blue: #1b1a42;
+  --error: #ff8fa3;
+  --error-bg: #3a1a2a;
+  --error-border: #6e3049;
+  --success: #3ee6a0;
+  --success-bg: #11302a;
+  --success-border: #22614d;
+  --info-bg: #1c1d45;
+  --info-border: #3b3a80;
+  --on-primary: #06140f;
+  --terminal-bg: #070a16;
+  --terminal-text: #d5dcf0;
+  --terminal-prompt: #3ee6a0;
+  --terminal-muted: #7c85a6;
+  --terminal-blue: #a68bff;
+  --star: #ffd479;
   color-scheme: dark;
 }
 
