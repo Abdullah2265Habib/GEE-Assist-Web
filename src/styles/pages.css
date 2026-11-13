@@ -130,6 +130,8 @@ main:focus {
 }
 
 .globe-placeholder {
+  display: grid;
+  place-items: center;
   width: 100%;
   max-width: 560px;
   aspect-ratio: 1;
@@ -415,6 +417,8 @@ main:focus {
 }
 
 .story-placeholder {
+  display: grid;
+  place-items: center;
   height: 100vh;
   background: #06141b;
 }

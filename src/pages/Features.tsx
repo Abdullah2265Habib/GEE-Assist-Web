@@ -1,6 +1,7 @@
 import { lazy, Suspense } from "react";
 import { Link } from "react-router-dom";
 import DownloadLab from "../components/downlab/DownloadLab";
+import EarthLoader from "../components/loader/EarthLoader";
 
 const Terrain3D = lazy(() => import("../components/terrain/Terrain3D"));
 
@@ -42,7 +43,13 @@ export default function Features() {
             clouds, and pull it apart into the bands each analysis is computed from.
           </p>
         </div>
-        <Suspense fallback={<div className="t3d-placeholder" aria-hidden="true" />}>
+        <Suspense
+          fallback={
+            <div className="t3d-placeholder">
+              <EarthLoader label="Loading the 3D model" detail="Downloading the 3D engine" />
+            </div>
+          }
+        >
           <Terrain3D />
         </Suspense>
       </div>

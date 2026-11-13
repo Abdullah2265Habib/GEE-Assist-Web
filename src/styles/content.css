@@ -1497,10 +1497,14 @@ fieldset.field legend {
 }
 
 .t3d-placeholder {
+  display: grid;
+  place-items: center;
   height: clamp(340px, 42vw, 470px);
   border-radius: var(--radius-lg);
   border: 1px solid var(--border);
-  background: var(--page-2);
+  background:
+    radial-gradient(120% 90% at 50% 0%, color-mix(in srgb, var(--ocean) 22%, transparent), transparent 60%),
+    var(--page-2);
 }
 
 @media (max-width: 900px) {
@@ -1515,4 +1519,12 @@ fieldset.field legend {
 
 .features-hero .nowrap {
   white-space: nowrap;
+}
+
+/* Keep room for the layer buttons and caption under the tile, so the
+   introduction does not jump when the model replaces its placeholder. */
+@media (min-width: 901px) {
+  .features-hero .t3d-placeholder {
+    margin-bottom: 150px;
+  }
 }

@@ -2,6 +2,7 @@ import { lazy, Suspense, useState } from "react";
 import { Link } from "react-router-dom";
 import type { SelectedArea } from "../components/globe/Globe";
 import CopyButton from "../components/CopyButton";
+import EarthLoader from "../components/loader/EarthLoader";
 import { ANALYSES, DATASETS, DATASET_CATEGORIES } from "../data/datasets";
 import { THEMES, useTheme } from "../theme/ThemeProvider";
 import { DOWNLOAD_URL } from "../config";
@@ -121,7 +122,13 @@ export default function Home() {
             </dl>
           </div>
           <div className="hero-globe">
-            <Suspense fallback={<div className="globe-placeholder" />}>
+            <Suspense
+              fallback={
+                <div className="globe-placeholder">
+                  <EarthLoader label="Loading the globe" detail="Fetching the world map" />
+                </div>
+              }
+            >
               <Globe onSelect={setArea} />
             </Suspense>
             <AreaReadout area={area} />
@@ -129,7 +136,13 @@ export default function Home() {
         </div>
       </section>
 
-      <Suspense fallback={<div className="story-placeholder" />}>
+      <Suspense
+        fallback={
+          <div className="story-placeholder">
+            <EarthLoader className="earth-loader-dark" label="Loading the story" detail="Preparing the orbit scenes" />
+          </div>
+        }
+      >
         <OrbitStory />
       </Suspense>
 

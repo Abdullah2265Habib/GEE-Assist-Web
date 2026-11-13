@@ -3,6 +3,7 @@ import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
+import EarthLoader from "../loader/EarthLoader";
 import "./terrain3d.css";
 
 /**
@@ -958,6 +959,11 @@ export default function Terrain3D() {
   const [reading, setReading] = useState<Reading | null>(null);
   const [touched, setTouched] = useState(false);
   const [failed, setFailed] = useState(false);
+  /** The build step under way, or null once the first frame is drawn. */
+  const [loading, setLoading] = useState<{ label: string; progress: number } | null>({
+    label: "Preparing the scene",
+    progress: 0.02,
+  });
   const layerRef = useRef<Layer>("true");
 
   useEffect(() => {
@@ -1013,467 +1019,497 @@ export default function Terrain3D() {
     sun.shadow.normalBias = 0.02;
     scene.add(sun);
 
-    const field = makeField();
-    const colors: Record<Layer, Float32Array> = {
-      true: layerColors(field, "true"),
-      ndvi: layerColors(field, "ndvi"),
-      water: layerColors(field, "water"),
-      lst: layerColors(field, "lst"),
-      change: layerColors(field, "change"),
+    let cancelled = false;
+    let teardown: (() => void) | null = null;
+    const CANCEL = Symbol("cancelled");
+    /** Show the next step, then give the browser a frame to paint it before the next heavy part. */
+    const step = async (label: string, progress: number) => {
+      setLoading({ label, progress });
+      await new Promise<void>((r) => requestAnimationFrame(() => setTimeout(r, 0)));
+      if (cancelled) throw CANCEL;
     };
 
-    const geo = terrainGeometry(field);
-    const colorAttr = geo.getAttribute("color") as THREE.BufferAttribute;
-    (colorAttr.array as Float32Array).set(colors.true);
-    const terrain = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.92 }));
-    terrain.castShadow = true;
-    terrain.receiveShadow = true;
-    scene.add(terrain);
+    const build = async () => {
+      await step("Shaping the land", 0.08);
+      const field = makeField();
+      await step("Computing the analysis layers", 0.3);
+      const colors: Record<Layer, Float32Array> = {
+        true: layerColors(field, "true"),
+        ndvi: layerColors(field, "ndvi"),
+        water: layerColors(field, "water"),
+        lst: layerColors(field, "lst"),
+        change: layerColors(field, "change"),
+      };
 
-    const skirt = new THREE.Mesh(
-      skirtGeometry(field),
-      new THREE.MeshStandardMaterial({ map: strataTexture(), vertexColors: true, roughness: 1, side: THREE.DoubleSide }),
-    );
-    skirt.receiveShadow = true;
-    scene.add(skirt);
+      await step("Building the terrain", 0.48);
+      const geo = terrainGeometry(field);
+      const colorAttr = geo.getAttribute("color") as THREE.BufferAttribute;
+      (colorAttr.array as Float32Array).set(colors.true);
+      const terrain = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.92 }));
+      terrain.castShadow = true;
+      terrain.receiveShadow = true;
+      scene.add(terrain);
 
-    // Plinth, kilometre ticks and a soft shadow under the block.
-    const plinth = new THREE.Mesh(
-      new THREE.BoxGeometry(SIZE + 0.5, 0.22, SIZE + 0.5),
-      new THREE.MeshStandardMaterial({ color: "#1d2b2c", roughness: 0.45, metalness: 0.3 }),
-    );
-    plinth.position.y = BASE - 0.11;
-    plinth.receiveShadow = true;
-    scene.add(plinth);
-    const tickMat = new THREE.MeshBasicMaterial({ color: "#cfe5e0" });
-    const tickGeo = new THREE.BoxGeometry(0.025, 0.006, 0.12);
-    for (let s = 0; s <= 10; s++) {
-      const p = (s / 10 - 0.5) * SIZE;
-      const len = s % 5 === 0 ? 1.7 : 1;
-      for (const [x, z, rot] of [
-        [p, SIZE / 2 + 0.13, 0],
-        [p, -SIZE / 2 - 0.13, 0],
-        [SIZE / 2 + 0.13, p, Math.PI / 2],
-        [-SIZE / 2 - 0.13, p, Math.PI / 2],
-      ] as const) {
-        const t = new THREE.Mesh(tickGeo, tickMat);
-        t.position.set(x, BASE + 0.003, z);
-        t.rotation.y = rot;
-        t.scale.z = len;
-        scene.add(t);
+      const skirt = new THREE.Mesh(
+        skirtGeometry(field),
+        new THREE.MeshStandardMaterial({ map: strataTexture(), vertexColors: true, roughness: 1, side: THREE.DoubleSide }),
+      );
+      skirt.receiveShadow = true;
+      scene.add(skirt);
+
+      // Plinth, kilometre ticks and a soft shadow under the block.
+      const plinth = new THREE.Mesh(
+        new THREE.BoxGeometry(SIZE + 0.5, 0.22, SIZE + 0.5),
+        new THREE.MeshStandardMaterial({ color: "#1d2b2c", roughness: 0.45, metalness: 0.3 }),
+      );
+      plinth.position.y = BASE - 0.11;
+      plinth.receiveShadow = true;
+      scene.add(plinth);
+      const tickMat = new THREE.MeshBasicMaterial({ color: "#cfe5e0" });
+      const tickGeo = new THREE.BoxGeometry(0.025, 0.006, 0.12);
+      for (let s = 0; s <= 10; s++) {
+        const p = (s / 10 - 0.5) * SIZE;
+        const len = s % 5 === 0 ? 1.7 : 1;
+        for (const [x, z, rot] of [
+          [p, SIZE / 2 + 0.13, 0],
+          [p, -SIZE / 2 - 0.13, 0],
+          [SIZE / 2 + 0.13, p, Math.PI / 2],
+          [-SIZE / 2 - 0.13, p, Math.PI / 2],
+        ] as const) {
+          const t = new THREE.Mesh(tickGeo, tickMat);
+          t.position.set(x, BASE + 0.003, z);
+          t.rotation.y = rot;
+          t.scale.z = len;
+          scene.add(t);
+        }
       }
-    }
-    const ground = new THREE.Mesh(
-      new THREE.PlaneGeometry(SIZE * 1.9, SIZE * 1.9),
-      new THREE.MeshBasicMaterial({ map: shadowTexture(), transparent: true, depthWrite: false }),
-    );
-    ground.rotation.x = -Math.PI / 2;
-    ground.position.y = BASE - 0.24;
-    scene.add(ground);
+      const ground = new THREE.Mesh(
+        new THREE.PlaneGeometry(SIZE * 1.9, SIZE * 1.9),
+        new THREE.MeshBasicMaterial({ map: shadowTexture(), transparent: true, depthWrite: false }),
+      );
+      ground.rotation.x = -Math.PI / 2;
+      ground.position.y = BASE - 0.24;
+      scene.add(ground);
 
-    // The river and lake surface.
-    const waves = waveNormalTexture();
-    const waterMat = new THREE.MeshStandardMaterial({
-      color: WATER_TINT.true,
-      roughness: 0.12,
-      metalness: 0.15,
-      transparent: true,
-      opacity: 0.84,
-      normalMap: waves,
-      normalScale: new THREE.Vector2(0.5, 0.5),
-    });
-    const waterSurface = new THREE.Mesh(new THREE.PlaneGeometry(SIZE, SIZE), waterMat);
-    waterSurface.rotation.x = -Math.PI / 2;
-    waterSurface.position.y = WATER_Y;
-    waterSurface.receiveShadow = true;
-    scene.add(waterSurface);
-    const waterFrom = new THREE.Color(WATER_TINT.true);
-    const waterTo = new THREE.Color(WATER_TINT.true);
+      // The river and lake surface.
+      const waves = waveNormalTexture();
+      const waterMat = new THREE.MeshStandardMaterial({
+        color: WATER_TINT.true,
+        roughness: 0.12,
+        metalness: 0.15,
+        transparent: true,
+        opacity: 0.84,
+        normalMap: waves,
+        normalScale: new THREE.Vector2(0.5, 0.5),
+      });
+      const waterSurface = new THREE.Mesh(new THREE.PlaneGeometry(SIZE, SIZE), waterMat);
+      waterSurface.rotation.x = -Math.PI / 2;
+      waterSurface.position.y = WATER_Y;
+      waterSurface.receiveShadow = true;
+      scene.add(waterSurface);
+      const waterFrom = new THREE.Color(WATER_TINT.true);
+      const waterTo = new THREE.Color(WATER_TINT.true);
 
-    // Trees, buildings and the bridge.
-    const painted: Painted[] = [...placeTrees(field, colors), placeBuildings(field, colors)];
-    painted.forEach((p) => scene.add(p.mesh));
-    scene.add(makeBridge());
+      await step("Planting trees and building the town", 0.62);
+      // Trees, buildings and the bridge.
+      const painted: Painted[] = [...placeTrees(field, colors), placeBuildings(field, colors)];
+      painted.forEach((p) => scene.add(p.mesh));
+      scene.add(makeBridge());
 
-    // Bands: lifted off the tile and spread into a grid when pulled apart.
-    const bandPlanes = BANDS.map((b, i) => {
-      const m = new THREE.Mesh(
-        new THREE.PlaneGeometry(SIZE, SIZE),
+      await step("Splitting the spectral bands", 0.8);
+      // Bands: lifted off the tile and spread into a grid when pulled apart.
+      const bandPlanes = BANDS.map((b, i) => {
+        const m = new THREE.Mesh(
+          new THREE.PlaneGeometry(SIZE, SIZE),
+          new THREE.MeshBasicMaterial({
+            map: bandTexture(field, i, b.tint),
+            transparent: true,
+            opacity: 0,
+            side: THREE.DoubleSide,
+            toneMapped: false,
+          }),
+        );
+        m.rotation.x = -Math.PI / 2;
+        m.visible = false;
+        scene.add(m);
+        const edge = new THREE.LineSegments(
+          new THREE.EdgesGeometry(m.geometry),
+          new THREE.LineBasicMaterial({ color: b.tint, transparent: true, opacity: 0, toneMapped: false }),
+        );
+        m.add(edge);
+        return m;
+      });
+      const bandLabels = BANDS.map((b) => {
+        const l = bandLabel(b);
+        l.visible = false;
+        scene.add(l);
+        return l;
+      });
+      let hoverBand = -1;
+      let tiltUntil = -1;
+      let tiltPhi = 1.0;
+      const sph = new THREE.Spherical();
+
+      await step("Launching the satellite", 0.92);
+      // Clouds.
+      const cloudRand = rng(3);
+      const cloudSet = Array.from({ length: 5 }, (_, i) => {
+        const c = makeCloud(40 + i * 7);
+        c.group.position.set(-7 + i * 3.1 + cloudRand(), field.maxY + 0.9 + cloudRand() * 0.8, (cloudRand() - 0.5) * 8);
+        c.group.scale.setScalar(0.6 + cloudRand() * 0.35);
+        scene.add(c.group);
+        return { ...c, base: c.group.scale.x };
+      });
+      let cloudShow = 1;
+      let cloudTarget = 1;
+
+      // Satellite and its orbit.
+      const sat = makeSatellite();
+      sat.group.position.set(4.6, 5.6, 0);
+      scene.add(sat.group);
+      const orbitPts = Array.from({ length: 129 }, (_, i) => {
+        const a = (i / 128) * Math.PI * 2;
+        return new THREE.Vector3(Math.cos(a) * 4.6, 0, Math.sin(a) * 4.6);
+      });
+      const orbit = new THREE.Line(
+        new THREE.BufferGeometry().setFromPoints(orbitPts),
+        new THREE.LineDashedMaterial({ color: "#cfe5e0", dashSize: 0.18, gapSize: 0.14, transparent: true, opacity: 0.35 }),
+      );
+      orbit.computeLineDistances();
+      scene.add(orbit);
+
+      const beamGeo = new THREE.BufferGeometry();
+      beamGeo.setAttribute("position", new THREE.BufferAttribute(new Float32Array(9), 3));
+      const beam = new THREE.Mesh(
+        beamGeo,
         new THREE.MeshBasicMaterial({
-          map: bandTexture(field, i, b.tint),
+          color: "#5ed3a8",
           transparent: true,
-          opacity: 0,
+          opacity: 0.2,
           side: THREE.DoubleSide,
-          toneMapped: false,
+          depthWrite: false,
+          blending: THREE.AdditiveBlending,
         }),
       );
-      m.rotation.x = -Math.PI / 2;
-      m.visible = false;
-      scene.add(m);
-      const edge = new THREE.LineSegments(
-        new THREE.EdgesGeometry(m.geometry),
-        new THREE.LineBasicMaterial({ color: b.tint, transparent: true, opacity: 0, toneMapped: false }),
+      beam.visible = false;
+      scene.add(beam);
+
+      const scanGeo = new THREE.BufferGeometry();
+      scanGeo.setAttribute("position", new THREE.BufferAttribute(new Float32Array(VN * 3), 3));
+      const scan = new THREE.Line(scanGeo, new THREE.LineBasicMaterial({ color: "#b6ffe3" }));
+      scan.visible = false;
+      scene.add(scan);
+
+      const marker = new THREE.Group();
+      const ring = new THREE.Mesh(
+        new THREE.RingGeometry(0.12, 0.19, 32),
+        new THREE.MeshBasicMaterial({ color: "#ffffff", side: THREE.DoubleSide, depthTest: false, transparent: true }),
       );
-      m.add(edge);
-      return m;
-    });
-    const bandLabels = BANDS.map((b) => {
-      const l = bandLabel(b);
-      l.visible = false;
-      scene.add(l);
-      return l;
-    });
-    let hoverBand = -1;
-    let tiltUntil = -1;
-    let tiltPhi = 1.0;
-    const sph = new THREE.Spherical();
+      ring.rotation.x = -Math.PI / 2;
+      ring.renderOrder = 5;
+      marker.add(ring);
+      const pin = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.012, 0.012, 0.9),
+        new THREE.MeshBasicMaterial({ color: "#ffffff", transparent: true, opacity: 0.85 }),
+      );
+      pin.position.y = 0.45;
+      marker.add(pin);
+      marker.visible = false;
+      scene.add(marker);
 
-    // Clouds.
-    const cloudRand = rng(3);
-    const cloudSet = Array.from({ length: 5 }, (_, i) => {
-      const c = makeCloud(40 + i * 7);
-      c.group.position.set(-7 + i * 3.1 + cloudRand(), field.maxY + 0.9 + cloudRand() * 0.8, (cloudRand() - 0.5) * 8);
-      c.group.scale.setScalar(0.6 + cloudRand() * 0.35);
-      scene.add(c.group);
-      return { ...c, base: c.group.scale.x };
-    });
-    let cloudShow = 1;
-    let cloudTarget = 1;
+      // Layer change: a sweep from west to east, led by the satellite.
+      let sweep: {
+        from: Float32Array;
+        to: Float32Array;
+        inst: { from: Float32Array; to: Float32Array }[];
+        start: number;
+      } | null = null;
+      const SWEEP = reduce ? 0.001 : 1.7;
+      const LEAD = reduce ? 0 : 0.45;
+      let explode = 0;
+      let explodeTarget = 0;
+      let clock = 0;
 
-    // Satellite and its orbit.
-    const sat = makeSatellite();
-    sat.group.position.set(4.6, 5.6, 0);
-    scene.add(sat.group);
-    const orbitPts = Array.from({ length: 129 }, (_, i) => {
-      const a = (i / 128) * Math.PI * 2;
-      return new THREE.Vector3(Math.cos(a) * 4.6, 0, Math.sin(a) * 4.6);
-    });
-    const orbit = new THREE.Line(
-      new THREE.BufferGeometry().setFromPoints(orbitPts),
-      new THREE.LineDashedMaterial({ color: "#cfe5e0", dashSize: 0.18, gapSize: 0.14, transparent: true, opacity: 0.35 }),
-    );
-    orbit.computeLineDistances();
-    scene.add(orbit);
+      let lastK = -1;
+      api.current = {
+        setLayer(l) {
+          sweep = {
+            from: Float32Array.from(colorAttr.array as Float32Array),
+            to: colors[l],
+            inst: painted.map((p) => ({ from: Float32Array.from(p.mesh.instanceColor!.array as Float32Array), to: p.colors[l] })),
+            start: clock,
+          };
+          waterFrom.copy(waterMat.color);
+          waterTo.set(WATER_TINT[l]);
+        },
+        setExploded(b) {
+          explodeTarget = b ? 1 : 0;
+          // Look down at the spread bands; tilt back to the usual view when they go back.
+          tiltPhi = b ? 0.6 : 1.0;
+          tiltUntil = clock + 1.6;
+          // What was under the pointer has moved away; clear the reading.
+          hoverBand = -1;
+          lastK = -1;
+          marker.visible = false;
+          setReading(null);
+        },
+        setClouds(b) {
+          cloudTarget = b ? 1 : 0;
+        },
+        refresh() {
+          if (lastK >= 0 && hoverBand < 0) setReading(readAt(field, lastK, layerRef.current));
+        },
+      };
 
-    const beamGeo = new THREE.BufferGeometry();
-    beamGeo.setAttribute("position", new THREE.BufferAttribute(new Float32Array(9), 3));
-    const beam = new THREE.Mesh(
-      beamGeo,
-      new THREE.MeshBasicMaterial({
-        color: "#5ed3a8",
-        transparent: true,
-        opacity: 0.2,
-        side: THREE.DoubleSide,
-        depthWrite: false,
-        blending: THREE.AdditiveBlending,
-      }),
-    );
-    beam.visible = false;
-    scene.add(beam);
-
-    const scanGeo = new THREE.BufferGeometry();
-    scanGeo.setAttribute("position", new THREE.BufferAttribute(new Float32Array(VN * 3), 3));
-    const scan = new THREE.Line(scanGeo, new THREE.LineBasicMaterial({ color: "#b6ffe3" }));
-    scan.visible = false;
-    scene.add(scan);
-
-    const marker = new THREE.Group();
-    const ring = new THREE.Mesh(
-      new THREE.RingGeometry(0.12, 0.19, 32),
-      new THREE.MeshBasicMaterial({ color: "#ffffff", side: THREE.DoubleSide, depthTest: false, transparent: true }),
-    );
-    ring.rotation.x = -Math.PI / 2;
-    ring.renderOrder = 5;
-    marker.add(ring);
-    const pin = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.012, 0.012, 0.9),
-      new THREE.MeshBasicMaterial({ color: "#ffffff", transparent: true, opacity: 0.85 }),
-    );
-    pin.position.y = 0.45;
-    marker.add(pin);
-    marker.visible = false;
-    scene.add(marker);
-
-    // Layer change: a sweep from west to east, led by the satellite.
-    let sweep: {
-      from: Float32Array;
-      to: Float32Array;
-      inst: { from: Float32Array; to: Float32Array }[];
-      start: number;
-    } | null = null;
-    const SWEEP = reduce ? 0.001 : 1.7;
-    const LEAD = reduce ? 0 : 0.45;
-    let explode = 0;
-    let explodeTarget = 0;
-    let clock = 0;
-
-    let lastK = -1;
-    api.current = {
-      setLayer(l) {
-        sweep = {
-          from: Float32Array.from(colorAttr.array as Float32Array),
-          to: colors[l],
-          inst: painted.map((p) => ({ from: Float32Array.from(p.mesh.instanceColor!.array as Float32Array), to: p.colors[l] })),
-          start: clock,
-        };
-        waterFrom.copy(waterMat.color);
-        waterTo.set(WATER_TINT[l]);
-      },
-      setExploded(b) {
-        explodeTarget = b ? 1 : 0;
-        // Look down at the spread bands; tilt back to the usual view when they go back.
-        tiltPhi = b ? 0.6 : 1.0;
-        tiltUntil = clock + 1.6;
-        // What was under the pointer has moved away; clear the reading.
+      const raycaster = new THREE.Raycaster();
+      const pointer = new THREE.Vector2();
+      const onMove = (e: PointerEvent) => {
+        const r = renderer.domElement.getBoundingClientRect();
+        pointer.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+        raycaster.setFromCamera(pointer, camera);
+        // When the bands are apart, read the band under the pointer.
+        if (explode > 0.6) {
+          const bh = raycaster.intersectObjects(bandPlanes, false)[0];
+          if (bh?.uv) {
+            const band = (bandPlanes as THREE.Object3D[]).indexOf(bh.object);
+            const k = indexAt(bh.uv.x, 1 - bh.uv.y);
+            marker.position.copy(bh.point);
+            marker.visible = true;
+            if (k !== lastK || band !== hoverBand) {
+              lastK = k;
+              hoverBand = band;
+              setReading(readBand(field, k, band));
+            }
+            return;
+          }
+        }
         hoverBand = -1;
-        lastK = -1;
-        marker.visible = false;
-        setReading(null);
-      },
-      setClouds(b) {
-        cloudTarget = b ? 1 : 0;
-      },
-      refresh() {
-        if (lastK >= 0 && hoverBand < 0) setReading(readAt(field, lastK, layerRef.current));
-      },
-    };
-
-    const raycaster = new THREE.Raycaster();
-    const pointer = new THREE.Vector2();
-    const onMove = (e: PointerEvent) => {
-      const r = renderer.domElement.getBoundingClientRect();
-      pointer.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
-      raycaster.setFromCamera(pointer, camera);
-      // When the bands are apart, read the band under the pointer.
-      if (explode > 0.6) {
-        const bh = raycaster.intersectObjects(bandPlanes, false)[0];
-        if (bh?.uv) {
-          const band = (bandPlanes as THREE.Object3D[]).indexOf(bh.object);
-          const k = indexAt(bh.uv.x, 1 - bh.uv.y);
-          marker.position.copy(bh.point);
-          marker.visible = true;
-          if (k !== lastK || band !== hoverBand) {
-            lastK = k;
-            hoverBand = band;
-            setReading(readBand(field, k, band));
+        const hit = raycaster.intersectObject(terrain, false)[0];
+        if (!hit) {
+          marker.visible = false;
+          if (lastK !== -1) {
+            lastK = -1;
+            setReading(null);
           }
           return;
         }
-      }
-      hoverBand = -1;
-      const hit = raycaster.intersectObject(terrain, false)[0];
-      if (!hit) {
+        const k = indexAt(hit.point.x / SIZE + 0.5, hit.point.z / SIZE + 0.5);
+        marker.position.copy(hit.point);
+        if (field.water[k]) marker.position.y = WATER_Y;
+        marker.visible = true;
+        if (k !== lastK) {
+          lastK = k;
+          setReading(readAt(field, k, layerRef.current));
+        }
+      };
+      const onLeave = () => {
         marker.visible = false;
-        if (lastK !== -1) {
-          lastK = -1;
-          setReading(null);
-        }
-        return;
-      }
-      const k = indexAt(hit.point.x / SIZE + 0.5, hit.point.z / SIZE + 0.5);
-      marker.position.copy(hit.point);
-      if (field.water[k]) marker.position.y = WATER_Y;
-      marker.visible = true;
-      if (k !== lastK) {
-        lastK = k;
-        setReading(readAt(field, k, layerRef.current));
-      }
-    };
-    const onLeave = () => {
-      marker.visible = false;
-      lastK = -1;
-      hoverBand = -1;
-      setReading(null);
-    };
-    renderer.domElement.addEventListener("pointermove", onMove);
-    renderer.domElement.addEventListener("pointerdown", onMove);
-    renderer.domElement.addEventListener("pointerleave", onLeave);
+        lastK = -1;
+        hoverBand = -1;
+        setReading(null);
+      };
+      renderer.domElement.addEventListener("pointermove", onMove);
+      renderer.domElement.addEventListener("pointerdown", onMove);
+      renderer.domElement.addEventListener("pointerleave", onLeave);
 
-    let idleTimer = 0;
-    const onStart = () => {
-      controls.autoRotate = false;
-      window.clearTimeout(idleTimer);
-      setTouched(true);
-    };
-    const onEnd = () => {
-      window.clearTimeout(idleTimer);
-      if (!reduce) idleTimer = window.setTimeout(() => (controls.autoRotate = true), 5000);
-    };
-    controls.addEventListener("start", onStart);
-    controls.addEventListener("end", onEnd);
+      let idleTimer = 0;
+      const onStart = () => {
+        controls.autoRotate = false;
+        window.clearTimeout(idleTimer);
+        setTouched(true);
+      };
+      const onEnd = () => {
+        window.clearTimeout(idleTimer);
+        if (!reduce) idleTimer = window.setTimeout(() => (controls.autoRotate = true), 5000);
+      };
+      controls.addEventListener("start", onStart);
+      controls.addEventListener("end", onEnd);
 
-    const resize = () => {
-      const w = host.clientWidth;
-      const h = host.clientHeight;
-      renderer.setSize(w, h, false);
-      camera.aspect = w / h;
-      // Pull back on narrow screens so the whole tile stays in view.
-      camera.zoom = Math.min(1, w / h / 1.3);
-      camera.updateProjectionMatrix();
-    };
-    const ro = new ResizeObserver(resize);
-    ro.observe(host);
-    resize();
+      const resize = () => {
+        const w = host.clientWidth;
+        const h = host.clientHeight;
+        renderer.setSize(w, h, false);
+        camera.aspect = w / h;
+        // Pull back on narrow screens so the whole tile stays in view.
+        camera.zoom = Math.min(1, w / h / 1.3);
+        camera.updateProjectionMatrix();
+      };
+      const ro = new ResizeObserver(resize);
+      ro.observe(host);
+      resize();
 
-    let visible = true;
-    const io = new IntersectionObserver(([e]) => (visible = e.isIntersecting));
-    io.observe(host);
+      let visible = true;
+      const io = new IntersectionObserver(([e]) => (visible = e.isIntersecting));
+      io.observe(host);
 
-    const target = new THREE.Vector3();
-    let raf = 0;
-    let last = performance.now();
-    const tick = (now: number) => {
-      raf = requestAnimationFrame(tick);
-      const dt = Math.min(0.05, (now - last) / 1000);
-      last = now;
-      if (!visible || document.hidden) return;
-      clock += dt;
+      const target = new THREE.Vector3();
+      let shown = false;
+      let raf = 0;
+      let last = performance.now();
+      const tick = (now: number) => {
+        raf = requestAnimationFrame(tick);
+        const dt = Math.min(0.05, (now - last) / 1000);
+        last = now;
+        if (!visible || document.hidden) return;
+        clock += dt;
 
-      // Colour sweep over the ground, trees, buildings and water.
-      let sweepX: number | null = null;
-      if (sweep) {
-        const p = (clock - sweep.start - LEAD) / SWEEP;
-        const edge = lerp(-0.08, 1.08, clamp(p));
-        const arr = colorAttr.array as Float32Array;
-        for (let j = 0; j < VN; j++) {
-          for (let i = 0; i < VN; i++) {
-            const m = 1 - smooth(edge - 0.035, edge + 0.035, i / N);
-            const k = (j * VN + i) * 3;
-            arr[k] = lerp(sweep.from[k], sweep.to[k], m);
-            arr[k + 1] = lerp(sweep.from[k + 1], sweep.to[k + 1], m);
-            arr[k + 2] = lerp(sweep.from[k + 2], sweep.to[k + 2], m);
+        // Colour sweep over the ground, trees, buildings and water.
+        let sweepX: number | null = null;
+        if (sweep) {
+          const p = (clock - sweep.start - LEAD) / SWEEP;
+          const edge = lerp(-0.08, 1.08, clamp(p));
+          const arr = colorAttr.array as Float32Array;
+          for (let j = 0; j < VN; j++) {
+            for (let i = 0; i < VN; i++) {
+              const m = 1 - smooth(edge - 0.035, edge + 0.035, i / N);
+              const k = (j * VN + i) * 3;
+              arr[k] = lerp(sweep.from[k], sweep.to[k], m);
+              arr[k + 1] = lerp(sweep.from[k + 1], sweep.to[k + 1], m);
+              arr[k + 2] = lerp(sweep.from[k + 2], sweep.to[k + 2], m);
+            }
           }
+          colorAttr.needsUpdate = true;
+          painted.forEach((pt, n) => {
+            const { from, to } = sweep!.inst[n];
+            const ic = pt.mesh.instanceColor!;
+            const ia = ic.array as Float32Array;
+            for (let q = 0; q < pt.u.length; q++) {
+              const m = 1 - smooth(edge - 0.035, edge + 0.035, pt.u[q]);
+              ia[q * 3] = lerp(from[q * 3], to[q * 3], m);
+              ia[q * 3 + 1] = lerp(from[q * 3 + 1], to[q * 3 + 1], m);
+              ia[q * 3 + 2] = lerp(from[q * 3 + 2], to[q * 3 + 2], m);
+            }
+            ic.needsUpdate = true;
+          });
+          waterMat.color.copy(waterFrom).lerp(waterTo, clamp(edge));
+          if (p >= 1) sweep = null;
+          else if (p > 0) sweepX = (clamp(edge) - 0.5) * SIZE;
+          else sweepX = -SIZE / 2;
         }
-        colorAttr.needsUpdate = true;
-        painted.forEach((pt, n) => {
-          const { from, to } = sweep!.inst[n];
-          const ic = pt.mesh.instanceColor!;
-          const ia = ic.array as Float32Array;
-          for (let q = 0; q < pt.u.length; q++) {
-            const m = 1 - smooth(edge - 0.035, edge + 0.035, pt.u[q]);
-            ia[q * 3] = lerp(from[q * 3], to[q * 3], m);
-            ia[q * 3 + 1] = lerp(from[q * 3 + 1], to[q * 3 + 1], m);
-            ia[q * 3 + 2] = lerp(from[q * 3 + 2], to[q * 3 + 2], m);
-          }
-          ic.needsUpdate = true;
-        });
-        waterMat.color.copy(waterFrom).lerp(waterTo, clamp(edge));
-        if (p >= 1) sweep = null;
-        else if (p > 0) sweepX = (clamp(edge) - 0.5) * SIZE;
-        else sweepX = -SIZE / 2;
-      }
 
-      // Water ripples.
-      if (!reduce) {
-        waves.offset.x = clock * 0.012;
-        waves.offset.y = clock * 0.007;
-      }
-
-      // Bands pulling apart.
-      explode += (explodeTarget - explode) * (1 - Math.exp(-dt * (reduce ? 60 : 4)));
-      // First they rise off the tile as a stack, then slide apart into the grid.
-      const rise = smooth(0, 0.55, explode);
-      const spread = smooth(0.35, 1, explode);
-      const bandY = field.maxY + 1.3;
-      bandPlanes.forEach((m, i) => {
-        const order = BANDS.length - 1 - i;
-        const [gx, gz] = BAND_GRID[i];
-        const s = lerp(1, BAND_SCALE, spread) * (i === hoverBand ? 1.03 : 1);
-        m.visible = explode > 0.01;
-        m.scale.set(s, s, 1);
-        m.position.set(
-          gx * 2.62 * spread,
-          lerp(field.maxY + 0.2, bandY, rise) + order * 0.55 * rise * (1 - spread),
-          gz * 2.62 * spread,
-        );
-        const mat = m.material as THREE.MeshBasicMaterial;
-        mat.opacity = explode;
-        mat.transparent = explode < 0.99;
-        const edge = (m.children[0] as THREE.LineSegments).material as THREE.LineBasicMaterial;
-        edge.opacity = explode;
-        edge.color.set(i === hoverBand ? "#ffffff" : BANDS[i].tint);
-        const label = bandLabels[i];
-        label.visible = spread > 0.5;
-        label.position.set(m.position.x, m.position.y + 0.5, m.position.z - (SIZE / 2) * s - 0.1);
-        (label.material as THREE.SpriteMaterial).opacity = smooth(0.5, 1, spread);
-      });
-      controls.target.y += (lerp(0.6, bandY - 0.4, explode) - controls.target.y) * (1 - Math.exp(-dt * 4));
-      // Step back while the bands are apart so the whole grid stays in frame, and tilt to look down at it.
-      offset.subVectors(camera.position, controls.target);
-      sph.setFromVector3(offset);
-      if (clock < tiltUntil) sph.phi += (tiltPhi - sph.phi) * (1 - Math.exp(-dt * 3.5));
-      sph.radius = baseDistance * lerp(1, 1.12, explode);
-      offset.setFromSpherical(sph);
-      camera.position.copy(controls.target).add(offset);
-
-      // Clouds drift east and fade at the edges; the mask (or the bands) clears them.
-      cloudShow += (cloudTarget * (1 - explode) - cloudShow) * (1 - Math.exp(-dt * (reduce ? 60 : 3)));
-      for (const c of cloudSet) {
+        // Water ripples.
         if (!reduce) {
-          c.group.position.x += dt * 0.22;
-          if (c.group.position.x > 7.5) c.group.position.x = -7.5;
+          waves.offset.x = clock * 0.012;
+          waves.offset.y = clock * 0.007;
         }
-        const edgeFade = 1 - smooth(5.2, 7.4, Math.abs(c.group.position.x));
-        c.mat.opacity = 0.94 * edgeFade * cloudShow;
-        c.group.visible = c.mat.opacity > 0.02;
-        c.group.scale.setScalar(c.base * lerp(0.6, 1, cloudShow));
-      }
 
-      // Satellite: a slow circle when idle, over the scan line during a sweep.
-      const satY = lerp(5.6, 7.6, explode);
-      orbit.position.y = satY;
-      // Keep the satellite out of the way while the bands are laid out.
-      sat.group.visible = orbit.visible = explode < 0.3;
-      (orbit.material as THREE.LineDashedMaterial).opacity = 0.35 * (sweepX === null ? 1 : 0.3);
-      if (sweepX !== null) {
-        target.set(sweepX, satY, 0);
-        sat.group.rotation.y += (0 - sat.group.rotation.y) * (1 - Math.exp(-dt * 5));
-      } else {
-        const a = reduce ? 0.8 : clock * 0.22;
-        target.set(Math.cos(a) * 4.6, satY + Math.sin(clock * 1.3) * 0.12, Math.sin(a) * 4.6);
-        sat.group.rotation.y = -a;
-      }
-      sat.group.position.lerp(target, 1 - Math.exp(-dt * (sweepX !== null ? 9 : 3)));
-      sat.wings.rotation.x = Math.sin(clock * 0.4) * 0.35;
-      sat.light.visible = Math.sin(clock * 6) > 0.6;
+        // Bands pulling apart.
+        explode += (explodeTarget - explode) * (1 - Math.exp(-dt * (reduce ? 60 : 4)));
+        // First they rise off the tile as a stack, then slide apart into the grid.
+        const rise = smooth(0, 0.55, explode);
+        const spread = smooth(0.35, 1, explode);
+        const bandY = field.maxY + 1.3;
+        bandPlanes.forEach((m, i) => {
+          const order = BANDS.length - 1 - i;
+          const [gx, gz] = BAND_GRID[i];
+          const s = lerp(1, BAND_SCALE, spread) * (i === hoverBand ? 1.03 : 1);
+          m.visible = explode > 0.01;
+          m.scale.set(s, s, 1);
+          m.position.set(
+            gx * 2.62 * spread,
+            lerp(field.maxY + 0.2, bandY, rise) + order * 0.55 * rise * (1 - spread),
+            gz * 2.62 * spread,
+          );
+          const mat = m.material as THREE.MeshBasicMaterial;
+          mat.opacity = explode;
+          mat.transparent = explode < 0.99;
+          const edge = (m.children[0] as THREE.LineSegments).material as THREE.LineBasicMaterial;
+          edge.opacity = explode;
+          edge.color.set(i === hoverBand ? "#ffffff" : BANDS[i].tint);
+          const label = bandLabels[i];
+          label.visible = spread > 0.5;
+          label.position.set(m.position.x, m.position.y + 0.5, m.position.z - (SIZE / 2) * s - 0.1);
+          (label.material as THREE.SpriteMaterial).opacity = smooth(0.5, 1, spread);
+        });
+        controls.target.y += (lerp(0.6, bandY - 0.4, explode) - controls.target.y) * (1 - Math.exp(-dt * 4));
+        // Step back while the bands are apart so the whole grid stays in frame, and tilt to look down at it.
+        offset.subVectors(camera.position, controls.target);
+        sph.setFromVector3(offset);
+        if (clock < tiltUntil) sph.phi += (tiltPhi - sph.phi) * (1 - Math.exp(-dt * 3.5));
+        sph.radius = baseDistance * lerp(1, 1.12, explode);
+        offset.setFromSpherical(sph);
+        camera.position.copy(controls.target).add(offset);
 
-      // Beam and scan line follow the sweep.
-      beam.visible = scan.visible = sweepX !== null && sweep !== null && clock - sweep.start > LEAD;
-      if (beam.visible && sweepX !== null) {
-        const bp = beamGeo.getAttribute("position") as THREE.BufferAttribute;
-        const sp = scanGeo.getAttribute("position") as THREE.BufferAttribute;
-        const col = Math.round(clamp(sweepX / SIZE + 0.5) * N);
-        const pos = sat.group.position;
-        bp.setXYZ(0, pos.x, pos.y - 0.3, pos.z);
-        bp.setXYZ(1, sweepX, Math.max(WATER_Y, field.elev[col] * HEIGHT), -SIZE / 2);
-        bp.setXYZ(2, sweepX, Math.max(WATER_Y, field.elev[N * VN + col] * HEIGHT), SIZE / 2);
-        bp.needsUpdate = true;
-        beamGeo.computeBoundingSphere();
-        for (let j = 0; j < VN; j++) {
-          sp.setXYZ(j, sweepX, Math.max(WATER_Y, field.elev[j * VN + col] * HEIGHT) + 0.02, (j / N - 0.5) * SIZE);
+        // Clouds drift east and fade at the edges; the mask (or the bands) clears them.
+        cloudShow += (cloudTarget * (1 - explode) - cloudShow) * (1 - Math.exp(-dt * (reduce ? 60 : 3)));
+        for (const c of cloudSet) {
+          if (!reduce) {
+            c.group.position.x += dt * 0.22;
+            if (c.group.position.x > 7.5) c.group.position.x = -7.5;
+          }
+          const edgeFade = 1 - smooth(5.2, 7.4, Math.abs(c.group.position.x));
+          c.mat.opacity = 0.94 * edgeFade * cloudShow;
+          c.group.visible = c.mat.opacity > 0.02;
+          c.group.scale.setScalar(c.base * lerp(0.6, 1, cloudShow));
         }
-        sp.needsUpdate = true;
-        scanGeo.computeBoundingSphere();
-      }
 
-      ring.scale.setScalar(1 + 0.15 * Math.sin(clock * 5));
-      controls.update();
-      if (compassRef.current) {
-        compassRef.current.style.transform = `rotate(${THREE.MathUtils.radToDeg(controls.getAzimuthalAngle())}deg)`;
-      }
-      renderer.render(scene, camera);
+        // Satellite: a slow circle when idle, over the scan line during a sweep.
+        const satY = lerp(5.6, 7.6, explode);
+        orbit.position.y = satY;
+        // Keep the satellite out of the way while the bands are laid out.
+        sat.group.visible = orbit.visible = explode < 0.3;
+        (orbit.material as THREE.LineDashedMaterial).opacity = 0.35 * (sweepX === null ? 1 : 0.3);
+        if (sweepX !== null) {
+          target.set(sweepX, satY, 0);
+          sat.group.rotation.y += (0 - sat.group.rotation.y) * (1 - Math.exp(-dt * 5));
+        } else {
+          const a = reduce ? 0.8 : clock * 0.22;
+          target.set(Math.cos(a) * 4.6, satY + Math.sin(clock * 1.3) * 0.12, Math.sin(a) * 4.6);
+          sat.group.rotation.y = -a;
+        }
+        sat.group.position.lerp(target, 1 - Math.exp(-dt * (sweepX !== null ? 9 : 3)));
+        sat.wings.rotation.x = Math.sin(clock * 0.4) * 0.35;
+        sat.light.visible = Math.sin(clock * 6) > 0.6;
+
+        // Beam and scan line follow the sweep.
+        beam.visible = scan.visible = sweepX !== null && sweep !== null && clock - sweep.start > LEAD;
+        if (beam.visible && sweepX !== null) {
+          const bp = beamGeo.getAttribute("position") as THREE.BufferAttribute;
+          const sp = scanGeo.getAttribute("position") as THREE.BufferAttribute;
+          const col = Math.round(clamp(sweepX / SIZE + 0.5) * N);
+          const pos = sat.group.position;
+          bp.setXYZ(0, pos.x, pos.y - 0.3, pos.z);
+          bp.setXYZ(1, sweepX, Math.max(WATER_Y, field.elev[col] * HEIGHT), -SIZE / 2);
+          bp.setXYZ(2, sweepX, Math.max(WATER_Y, field.elev[N * VN + col] * HEIGHT), SIZE / 2);
+          bp.needsUpdate = true;
+          beamGeo.computeBoundingSphere();
+          for (let j = 0; j < VN; j++) {
+            sp.setXYZ(j, sweepX, Math.max(WATER_Y, field.elev[j * VN + col] * HEIGHT) + 0.02, (j / N - 0.5) * SIZE);
+          }
+          sp.needsUpdate = true;
+          scanGeo.computeBoundingSphere();
+        }
+
+        ring.scale.setScalar(1 + 0.15 * Math.sin(clock * 5));
+        controls.update();
+        if (compassRef.current) {
+          compassRef.current.style.transform = `rotate(${THREE.MathUtils.radToDeg(controls.getAzimuthalAngle())}deg)`;
+        }
+        renderer.render(scene, camera);
+        if (!shown) {
+          shown = true;
+          setLoading(null);
+        }
+      };
+      raf = requestAnimationFrame(tick);
+      teardown = () => {
+        cancelAnimationFrame(raf);
+        window.clearTimeout(idleTimer);
+        ro.disconnect();
+        io.disconnect();
+        renderer.domElement.removeEventListener("pointermove", onMove);
+        renderer.domElement.removeEventListener("pointerdown", onMove);
+        renderer.domElement.removeEventListener("pointerleave", onLeave);
+      };
     };
-    raf = requestAnimationFrame(tick);
+    build().catch((e) => {
+      if (e !== CANCEL) throw e;
+    });
 
     return () => {
-      cancelAnimationFrame(raf);
-      window.clearTimeout(idleTimer);
-      ro.disconnect();
-      io.disconnect();
+      cancelled = true;
+      teardown?.();
       controls.dispose();
-      renderer.domElement.removeEventListener("pointermove", onMove);
-      renderer.domElement.removeEventListener("pointerdown", onMove);
-      renderer.domElement.removeEventListener("pointerleave", onLeave);
       scene.traverse((o) => {
         if (o instanceof THREE.Mesh || o instanceof THREE.Line) {
           o.geometry.dispose();
@@ -1520,6 +1556,11 @@ export default function Terrain3D() {
       <div className="t3d-stage">
         <div ref={hostRef} className="t3d-canvas" />
         {failed && <p className="t3d-fallback">This 3D view needs WebGL, which this browser has turned off.</p>}
+        {!failed && (
+          <div className={`t3d-loading${loading ? "" : " is-done"}`} aria-hidden={!loading}>
+            <EarthLoader label="Loading the 3D model" detail={loading?.label ?? "Ready"} progress={loading?.progress ?? 1} />
+          </div>
+        )}
 
         <div className={`t3d-readout${reading ? " is-on" : ""}`} aria-live="polite">
           {reading ? (
@@ -1550,22 +1591,28 @@ export default function Terrain3D() {
           </div>
         )}
 
-        {!touched && !failed && <span className="t3d-hint">Drag to turn</span>}
+        {!touched && !failed && !loading && <span className="t3d-hint">Drag to turn</span>}
       </div>
 
       <div className="t3d-controls">
         <div className="t3d-layers" role="group" aria-label="Analysis layer">
           {LAYERS.map((l) => (
-            <button key={l.id} type="button" aria-pressed={layer === l.id} onClick={() => chooseLayer(l.id)}>
+            <button
+              key={l.id}
+              type="button"
+              aria-pressed={layer === l.id}
+              disabled={!!loading}
+              onClick={() => chooseLayer(l.id)}
+            >
               {l.label}
             </button>
           ))}
         </div>
         <div className="t3d-toggles">
-          <button type="button" className="t3d-split" aria-pressed={!clouds} onClick={toggleClouds}>
+          <button type="button" className="t3d-split" aria-pressed={!clouds} disabled={!!loading} onClick={toggleClouds}>
             {clouds ? "Mask clouds" : "Show clouds"}
           </button>
-          <button type="button" className="t3d-split" aria-pressed={exploded} onClick={toggleBands}>
+          <button type="button" className="t3d-split" aria-pressed={exploded} disabled={!!loading} onClick={toggleBands}>
             {exploded ? "Put the bands back" : "Pull apart the bands"}
           </button>
         </div>

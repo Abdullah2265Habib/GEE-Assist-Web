@@ -33,6 +33,32 @@
   cursor: grabbing;
 }
 
+.t3d-loading {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(120% 90% at 50% 0%, color-mix(in srgb, var(--ocean) 22%, transparent), transparent 60%),
+    var(--page-2);
+  transition:
+    opacity 0.6s var(--ease),
+    visibility 0s linear 0.6s;
+}
+
+.t3d-loading.is-done {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.t3d-layers button:disabled,
+.t3d-split:disabled {
+  opacity: 0.5;
+  cursor: progress;
+}
+
 .t3d-fallback {
   position: absolute;
   inset: 0;
