@@ -38,6 +38,28 @@
   --ob-star: #f2f2f2;
 }
 
+:root[data-theme="earth"] .orbit-badge {
+  --ob-ocean: #1f6fa8;
+  --ob-ocean-hi: #4b8fc4;
+  --ob-land: #e6d3a8;
+  --ob-land-edge: #2d6a4f;
+  --ob-glow: #4b8fc4;
+  --ob-orbit: #1f6fa8;
+  --ob-beam: #2d6a4f;
+  --ob-star: #6f6a55;
+}
+
+:root[data-theme="navy"] .orbit-badge {
+  --ob-ocean: #17305a;
+  --ob-ocean-hi: #2a4a7e;
+  --ob-land: #cdb98a;
+  --ob-land-edge: #f5ecd7;
+  --ob-glow: #e6d3a8;
+  --ob-orbit: #e6d3a8;
+  --ob-beam: #ffffff;
+  --ob-star: #ffffff;
+}
+
 .ob-stars circle {
   fill: var(--ob-star);
   opacity: 0.25;

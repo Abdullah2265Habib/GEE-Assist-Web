@@ -76,7 +76,11 @@ function ThemePicker() {
           className="theme-card"
           onClick={() => setTheme(t.name)}
         >
-          <img src={t.icon.replace("-64", "-256")} alt="" width={96} height={96} />
+          {t.inApp ? (
+            <img src={t.icon.replace("-64", "-256")} alt="" width={96} height={96} />
+          ) : (
+            <span className={`theme-card-disc swatch-${t.name}`} aria-hidden="true" />
+          )}
           <span>{t.label}</span>
         </button>
       ))}
@@ -241,10 +245,11 @@ export default function Home() {
       <section className="section">
         <div className="container split">
           <div>
-            <h2>Three themes, here and in the app</h2>
+            <h2>Pick a theme</h2>
             <p>
               On first start GEE-Assist asks for a theme: light, dark blue-green or dark grey. Each has its own icon for the
-              window and taskbar. Pick one here and this website switches with it.
+              window and taskbar. This website has those three plus two of its own: ocean, forest and sand, and navy and
+              sand. Pick one here and the site switches with it.
             </p>
           </div>
           <ThemePicker />

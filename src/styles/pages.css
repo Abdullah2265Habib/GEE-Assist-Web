@@ -271,7 +271,8 @@ main:focus {
 }
 
 :root[data-theme="dark-grey"] .band-dark,
-:root[data-theme="dark-green"] .band-dark {
+:root[data-theme="dark-green"] .band-dark,
+:root[data-theme="navy"] .band-dark {
   background: var(--page-2);
 }
 
@@ -357,7 +358,7 @@ main:focus {
 
 .theme-picker {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
   gap: 16px;
 }
 
@@ -379,6 +380,14 @@ main:focus {
   width: min(96px, 100%);
   height: auto;
   border-radius: 50%;
+}
+
+.theme-card-disc {
+  display: block;
+  width: min(96px, 100%);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 1px solid rgb(0 0 0 / 0.12);
 }
 
 .theme-card:hover {

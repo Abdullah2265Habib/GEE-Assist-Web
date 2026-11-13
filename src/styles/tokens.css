@@ -1,6 +1,8 @@
 /* Colour tokens. The names and values come from the desktop app's palette
    (frontend/palette.py in GEE-Assist) so the website and the app look like
-   one product. Three themes, as in the app: light, dark blue-green, dark grey. */
+   one product. Three themes, as in the app: light, dark blue-green, dark grey.
+   Two more are website-only: "earth" (ocean blue, forest green, desert sand)
+   and "navy" (navy blue, white, desert sand). */
 
 :root {
   --surface: #ffffff;
@@ -110,6 +112,79 @@
   --terminal-muted: #8a8a8a;
   --terminal-blue: #7cbcf0;
   --star: #f0c25c;
+  color-scheme: dark;
+}
+
+:root[data-theme="earth"] {
+  --surface: #fffaf0;
+  --page: #f5ecd7;
+  --page-2: #efe2c6;
+  --ink: #1d3a2b;
+  --text: #39483c;
+  --muted: #6b6650;
+  --subtle: #9a9277;
+  --border: #e3d4b0;
+  --border-strong: #cfbb8c;
+  --field: #fffcf6;
+  --leaf: #2d6a4f;
+  --leaf-dark: #1f5039;
+  --ocean: #1f6fa8;
+  --ocean-dark: #175886;
+  --mint: #e3ead6;
+  --sky: #dfe9ec;
+  --foam: #faf3e3;
+  --header-green: #e2e5cc;
+  --header-blue: #dce6e4;
+  --success: #2d6a4f;
+  --success-bg: #e8eedb;
+  --success-border: #bfd0ad;
+  --info-bg: #e6eef0;
+  --info-border: #bcd3e0;
+  --on-primary: #ffffff;
+  --terminal-bg: #11261c;
+  --terminal-text: #ede3cc;
+  --terminal-prompt: #e6d3a8;
+  --terminal-muted: #9fae9a;
+  --terminal-blue: #7fbde8;
+  --star: #c98b2b;
+  color-scheme: light;
+}
+
+:root[data-theme="navy"] {
+  --surface: #13284d;
+  --page: #0b1a35;
+  --page-2: #0e2042;
+  --ink: #ffffff;
+  --text: #e4e9f1;
+  --muted: #b0bbcf;
+  --subtle: #8794ac;
+  --border: #233a62;
+  --border-strong: #36507c;
+  --field: #0d1e3c;
+  --leaf: #e6d3a8;
+  --leaf-dark: #f3e7c9;
+  --ocean: #e6d3a8;
+  --ocean-dark: #f3e7c9;
+  --mint: #1a3056;
+  --sky: #172d52;
+  --foam: #152b4f;
+  --header-green: #172e55;
+  --header-blue: #12284c;
+  --error: #ff9a8c;
+  --error-bg: #3a2430;
+  --error-border: #6b3a44;
+  --success: #e6d3a8;
+  --success-bg: #26324a;
+  --success-border: #6e6550;
+  --info-bg: #172f55;
+  --info-border: #2e4c7a;
+  --on-primary: #0b1a35;
+  --terminal-bg: #07132a;
+  --terminal-text: #e4e9f1;
+  --terminal-prompt: #e6d3a8;
+  --terminal-muted: #8794ac;
+  --terminal-blue: #ffffff;
+  --star: #e6c27a;
   color-scheme: dark;
 }
 

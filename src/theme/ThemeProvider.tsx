@@ -1,13 +1,17 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 
-/** The same three themes the desktop app offers in View → Theme. */
-export type ThemeName = "light" | "dark-green" | "dark-grey";
+/** The three themes the desktop app offers in View → Theme, plus two website-only ones. */
+export type ThemeName = "light" | "dark-green" | "dark-grey" | "earth" | "navy";
 
-export const THEMES: { name: ThemeName; label: string; icon: string }[] = [
-  { name: "light", label: "Light", icon: "/media/icon-light-64.png" },
-  { name: "dark-green", label: "Dark blue-green", icon: "/media/icon-dark-green-64.png" },
-  { name: "dark-grey", label: "Dark grey", icon: "/media/icon-dark-grey-64.png" },
+export const THEMES: { name: ThemeName; label: string; icon: string; inApp: boolean }[] = [
+  { name: "light", label: "Light", icon: "/media/icon-light-64.png", inApp: true },
+  { name: "dark-green", label: "Dark blue-green", icon: "/media/icon-dark-green-64.png", inApp: true },
+  { name: "dark-grey", label: "Dark grey", icon: "/media/icon-dark-grey-64.png", inApp: true },
+  { name: "earth", label: "Ocean, forest & sand", icon: "/media/icon-light-64.png", inApp: false },
+  { name: "navy", label: "Navy & sand", icon: "/media/icon-dark-green-64.png", inApp: false },
 ];
+
+const THEME_NAMES = THEMES.map((t) => t.name) as string[];
 
 const STORAGE_KEY = "gee-assist-theme";
 
@@ -21,7 +25,7 @@ const ThemeContext = createContext<ThemeContextValue | null>(null);
 function readInitialTheme(): ThemeName {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved === "light" || saved === "dark-green" || saved === "dark-grey") return saved;
+    if (saved && THEME_NAMES.includes(saved)) return saved as ThemeName;
   } catch {
     /* storage unavailable: fall through */
   }

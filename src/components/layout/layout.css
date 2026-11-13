@@ -203,6 +203,14 @@
   background: linear-gradient(135deg, #1f1f1f 50%, #ababab 50%);
 }
 
+.swatch-earth {
+  background: conic-gradient(from 45deg, #1f6fa8 0 120deg, #2d6a4f 120deg 240deg, #e6d3a8 240deg 360deg);
+}
+
+.swatch-navy {
+  background: conic-gradient(from 45deg, #0f2347 0 120deg, #ffffff 120deg 240deg, #e6d3a8 240deg 360deg);
+}
+
 .theme-swatch[aria-checked="true"] {
   box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--ocean);
 }

@@ -26,6 +26,22 @@
   --globe-selected: #6fd3a8;
 }
 
+:root[data-theme="earth"] .globe {
+  --globe-ocean: #1f6fa8;
+  --globe-ocean-hi: #4b8fc4;
+  --globe-land: #e6d3a8;
+  --globe-land-stroke: #2d6a4f;
+  --globe-selected: #2d6a4f;
+}
+
+:root[data-theme="navy"] .globe {
+  --globe-ocean: #17305a;
+  --globe-ocean-hi: #2a4a7e;
+  --globe-land: #cdb98a;
+  --globe-land-stroke: #f5ecd7;
+  --globe-selected: #ffffff;
+}
+
 .globe-svg {
   width: 100%;
   height: auto;
