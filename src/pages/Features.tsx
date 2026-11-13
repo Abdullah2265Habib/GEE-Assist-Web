@@ -1,5 +1,8 @@
+import { lazy, Suspense } from "react";
 import { Link } from "react-router-dom";
 import DownloadLab from "../components/downlab/DownloadLab";
+
+const Terrain3D = lazy(() => import("../components/terrain/Terrain3D"));
 
 const SHORTCUTS: [string[], string][] = [
   [["Ctrl", "N"], "New request"],
@@ -25,12 +28,23 @@ const SECTIONS = [
 export default function Features() {
   return (
     <>
-      <div className="container page-head">
-        <h1>What GEE-Assist does</h1>
-        <p className="lede">
-          A desktop app that sits between you and Google Earth Engine. It finds the right collection, builds the request,
-          and brings the result to your disk in pieces Earth Engine will accept.
-        </p>
+      <div className="container page-head features-hero">
+        <div>
+          <h1>
+            What <span className="nowrap">GEE-Assist</span> does
+          </h1>
+          <p className="lede">
+            A desktop app that sits between you and Google Earth Engine. It finds the right collection, builds the
+            request, and brings the result to your disk in pieces Earth Engine will accept.
+          </p>
+          <p className="features-hero-note">
+            This tile is the kind of area it downloads. Turn it, point at it, switch the analysis, and pull
+            it apart into the bands each analysis is computed from.
+          </p>
+        </div>
+        <Suspense fallback={<div className="t3d-placeholder" aria-hidden="true" />}>
+          <Terrain3D />
+        </Suspense>
       </div>
 
       <div className="container doc-layout">

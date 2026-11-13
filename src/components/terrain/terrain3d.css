@@ -1,0 +1,234 @@
+.t3d {
+  margin: 0;
+  display: grid;
+  gap: 14px;
+}
+
+.t3d-stage {
+  position: relative;
+  height: clamp(340px, 42vw, 470px);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  background:
+    radial-gradient(120% 90% at 50% 0%, color-mix(in srgb, var(--ocean) 22%, transparent), transparent 60%),
+    radial-gradient(80% 60% at 50% 100%, color-mix(in srgb, var(--leaf) 16%, transparent), transparent 70%),
+    var(--page-2);
+}
+
+.t3d-canvas,
+.t3d-canvas canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.t3d-canvas canvas {
+  cursor: grab;
+}
+
+.t3d-canvas canvas:active {
+  cursor: grabbing;
+}
+
+.t3d-fallback {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  text-align: center;
+  color: var(--muted);
+}
+
+.t3d-readout {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  display: grid;
+  gap: 1px;
+  min-width: 150px;
+  padding: 10px 12px;
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--surface) 86%, transparent);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(6px);
+  pointer-events: none;
+  font-size: var(--text-xs);
+  color: var(--muted);
+  transition: border-color 0.2s var(--ease);
+}
+
+.t3d-readout.is-on {
+  border-color: var(--leaf);
+}
+
+.t3d-readout strong {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.t3d-bands {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  margin: 0;
+  padding: 10px 12px;
+  list-style: none;
+  display: grid;
+  gap: 4px;
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--surface) 86%, transparent);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(6px);
+  font-size: var(--text-xs);
+  color: var(--text);
+  pointer-events: none;
+  animation: t3d-in 0.35s var(--ease);
+}
+
+.t3d-bands li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.t3d-bands i {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+
+.t3d-bands code {
+  font-family: var(--font-mono);
+  color: var(--ink);
+  background: none;
+  padding: 0;
+}
+
+.t3d-hint {
+  position: absolute;
+  left: 50%;
+  bottom: 14px;
+  transform: translateX(-50%);
+  padding: 6px 12px;
+  border-radius: 99px;
+  background: color-mix(in srgb, var(--surface) 80%, transparent);
+  border: 1px solid var(--border);
+  font-size: var(--text-xs);
+  color: var(--text);
+  pointer-events: none;
+  animation: t3d-nudge 2.4s ease-in-out infinite;
+}
+
+.t3d-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.t3d-layers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.t3d-layers button,
+.t3d-split {
+  padding: 0.4em 0.85em;
+  border-radius: 99px;
+  border: 1px solid var(--border-strong);
+  background: transparent;
+  color: var(--text);
+  font-size: var(--text-sm);
+  transition: background 0.2s var(--ease), border-color 0.2s var(--ease), color 0.2s var(--ease);
+}
+
+.t3d-layers button:hover,
+.t3d-split:hover {
+  border-color: var(--leaf);
+  color: var(--ink);
+}
+
+.t3d-layers button[aria-pressed="true"] {
+  background: var(--leaf);
+  border-color: var(--leaf);
+  color: var(--on-primary);
+  font-weight: 600;
+}
+
+.t3d-split {
+  border-style: dashed;
+}
+
+.t3d-split[aria-pressed="true"] {
+  border-style: solid;
+  border-color: var(--ocean);
+  background: var(--sky);
+  color: var(--ink);
+}
+
+.t3d figcaption {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 2.6em;
+  font-size: var(--text-sm);
+  color: var(--muted);
+}
+
+.t3d-legend {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.t3d-legend i {
+  width: 120px;
+  height: 8px;
+  border-radius: 99px;
+}
+
+.t3d-legend-ndvi i {
+  background: linear-gradient(90deg, #3d5a80, #a5642a 22%, #e8d36a 45%, #7fc35a 73%, #17602a);
+}
+
+.t3d-legend-water i {
+  background: linear-gradient(90deg, #1c2629, #3a4a50 40%, #6a8a94 53%, #3aa8f5 67%, #1366c9);
+}
+
+.t3d-legend-lst i {
+  background: linear-gradient(90deg, #2c5fa8, #7cc1d8 30%, #f2d06b 53%, #e8743a 77%, #b8232b);
+}
+
+@keyframes t3d-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes t3d-nudge {
+  0%,
+  100% {
+    transform: translateX(-50%);
+  }
+  50% {
+    transform: translateX(calc(-50% + 8px));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .t3d-hint {
+    animation: none;
+  }
+}
