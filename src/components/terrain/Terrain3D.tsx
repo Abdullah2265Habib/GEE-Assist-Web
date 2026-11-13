@@ -45,11 +45,20 @@ const LAYERS: { id: Layer; label: string; formula: string; legend?: [string, str
 ];
 
 const BANDS = [
-  { id: "B2", name: "Blue", tint: "#4d8df7" },
-  { id: "B3", name: "Green", tint: "#45c46a" },
-  { id: "B4", name: "Red", tint: "#ef5350" },
-  { id: "B8", name: "Near-infrared", tint: "#c17cf2" },
+  { id: "B2", name: "Blue", nm: 490, tint: "#4d8df7" },
+  { id: "B3", name: "Green", nm: 560, tint: "#45c46a" },
+  { id: "B4", name: "Red", nm: 665, tint: "#ef5350" },
+  { id: "B8", name: "Near-infrared", nm: 842, tint: "#c17cf2" },
 ];
+
+/** Where each band settles when pulled apart: a 2 x 2 grid above the tile, so none hides another. */
+const BAND_GRID: [number, number][] = [
+  [-1, -1],
+  [1, -1],
+  [-1, 1],
+  [1, 1],
+];
+const BAND_SCALE = 0.47;
 
 const N = 192;
 const VN = N + 1;
@@ -404,6 +413,19 @@ function readAt(f: Field, k: number, layer: Layer): Reading {
   }
 }
 
+function readBand(f: Field, k: number, band: number): Reading {
+  const b = BANDS[band];
+  const r = reflectance(f, k)[band];
+  const i = k % VN;
+  const j = Math.floor(k / VN);
+  return {
+    title: `${b.id} · ${b.name}, ${b.nm} nm`,
+    value: `${(r * 100).toFixed(1)} %`,
+    detail: `of the light reflected · ${landClass(f, k)}`,
+    where: `${((i / N) * 10).toFixed(1)} km E · ${((1 - j / N) * 10).toFixed(1)} km N`,
+  };
+}
+
 /* ---------- textures ---------- */
 
 function canvasTexture(w: number, h: number, draw: (ctx: CanvasRenderingContext2D) => void, srgb = true) {
@@ -521,18 +543,59 @@ function shadowTexture() {
   });
 }
 
-function bandTexture(f: Field, band: number) {
+/**
+ * One band as an image: brightness is reflectance, stretched between the band's own
+ * darkest and brightest values so its detail is readable, and lightly tinted with the
+ * band's colour so the four can be told apart.
+ */
+function bandTexture(f: Field, band: number, tint: string) {
+  const values = new Float32Array(VN * VN);
+  for (let k = 0; k < VN * VN; k++) values[k] = reflectance(f, k)[band];
+  const sorted = Float32Array.from(values).sort();
+  const lo = sorted[Math.floor(sorted.length * 0.01)];
+  const hi = sorted[Math.floor(sorted.length * 0.99)];
+  const t = new THREE.Color(tint);
   return canvasTexture(VN, VN, (ctx) => {
     const img = ctx.createImageData(VN, VN);
     for (let k = 0; k < VN * VN; k++) {
-      const v = Math.round(clamp(reflectance(f, k)[band] / 0.46) ** 0.7 * 255);
-      img.data[k * 4] = v;
-      img.data[k * 4 + 1] = v;
-      img.data[k * 4 + 2] = v;
+      const v = 0.06 + 0.94 * clamp((values[k] - lo) / (hi - lo || 1)) ** 0.85;
+      img.data[k * 4] = clamp(v * lerp(1, t.r * 1.25, 0.45)) * 255;
+      img.data[k * 4 + 1] = clamp(v * lerp(1, t.g * 1.25, 0.45)) * 255;
+      img.data[k * 4 + 2] = clamp(v * lerp(1, t.b * 1.25, 0.45)) * 255;
       img.data[k * 4 + 3] = 255;
     }
     ctx.putImageData(img, 0, 0);
   });
+}
+
+/** A floating label for a band: its name, colour and wavelength. */
+function bandLabel(b: (typeof BANDS)[number]) {
+  const tex = canvasTexture(640, 112, (ctx) => {
+    ctx.fillStyle = "rgba(12, 28, 30, 0.88)";
+    ctx.beginPath();
+    ctx.roundRect(4, 4, 632, 104, 52);
+    ctx.fill();
+    ctx.strokeStyle = b.tint;
+    ctx.lineWidth = 4;
+    ctx.stroke();
+    ctx.fillStyle = b.tint;
+    ctx.beginPath();
+    ctx.arc(56, 56, 18, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "700 46px 'IBM Plex Sans', system-ui, sans-serif";
+    ctx.textBaseline = "middle";
+    ctx.fillText(b.id, 92, 58);
+    ctx.fillStyle = "#cfe5e0";
+    ctx.font = "500 40px 'IBM Plex Sans', system-ui, sans-serif";
+    ctx.fillText(`${b.name} · ${b.nm} nm`, 170, 58);
+  });
+  const sprite = new THREE.Sprite(
+    new THREE.SpriteMaterial({ map: tex, transparent: true, opacity: 0, depthTest: false, toneMapped: false }),
+  );
+  sprite.scale.set(3.8, 0.665, 1);
+  sprite.renderOrder = 10;
+  return sprite;
 }
 
 /* ---------- geometry ---------- */
@@ -1032,17 +1095,16 @@ export default function Terrain3D() {
     painted.forEach((p) => scene.add(p.mesh));
     scene.add(makeBridge());
 
-    // Bands, stacked above the tile when pulled apart. Top to bottom: B2, B3, B4, B8.
+    // Bands: lifted off the tile and spread into a grid when pulled apart.
     const bandPlanes = BANDS.map((b, i) => {
       const m = new THREE.Mesh(
         new THREE.PlaneGeometry(SIZE, SIZE),
         new THREE.MeshBasicMaterial({
-          map: bandTexture(field, i),
-          color: b.tint,
+          map: bandTexture(field, i, b.tint),
           transparent: true,
           opacity: 0,
           side: THREE.DoubleSide,
-          depthWrite: false,
+          toneMapped: false,
         }),
       );
       m.rotation.x = -Math.PI / 2;
@@ -1050,11 +1112,21 @@ export default function Terrain3D() {
       scene.add(m);
       const edge = new THREE.LineSegments(
         new THREE.EdgesGeometry(m.geometry),
-        new THREE.LineBasicMaterial({ color: b.tint, transparent: true, opacity: 0 }),
+        new THREE.LineBasicMaterial({ color: b.tint, transparent: true, opacity: 0, toneMapped: false }),
       );
       m.add(edge);
       return m;
     });
+    const bandLabels = BANDS.map((b) => {
+      const l = bandLabel(b);
+      l.visible = false;
+      scene.add(l);
+      return l;
+    });
+    let hoverBand = -1;
+    let tiltUntil = -1;
+    let tiltPhi = 1.0;
+    const sph = new THREE.Spherical();
 
     // Clouds.
     const cloudRand = rng(3);
@@ -1149,12 +1221,20 @@ export default function Terrain3D() {
       },
       setExploded(b) {
         explodeTarget = b ? 1 : 0;
+        // Look down at the spread bands; tilt back to the usual view when they go back.
+        tiltPhi = b ? 0.6 : 1.0;
+        tiltUntil = clock + 1.6;
+        // What was under the pointer has moved away; clear the reading.
+        hoverBand = -1;
+        lastK = -1;
+        marker.visible = false;
+        setReading(null);
       },
       setClouds(b) {
         cloudTarget = b ? 1 : 0;
       },
       refresh() {
-        if (lastK >= 0) setReading(readAt(field, lastK, layerRef.current));
+        if (lastK >= 0 && hoverBand < 0) setReading(readAt(field, lastK, layerRef.current));
       },
     };
 
@@ -1164,6 +1244,23 @@ export default function Terrain3D() {
       const r = renderer.domElement.getBoundingClientRect();
       pointer.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
       raycaster.setFromCamera(pointer, camera);
+      // When the bands are apart, read the band under the pointer.
+      if (explode > 0.6) {
+        const bh = raycaster.intersectObjects(bandPlanes, false)[0];
+        if (bh?.uv) {
+          const band = (bandPlanes as THREE.Object3D[]).indexOf(bh.object);
+          const k = indexAt(bh.uv.x, 1 - bh.uv.y);
+          marker.position.copy(bh.point);
+          marker.visible = true;
+          if (k !== lastK || band !== hoverBand) {
+            lastK = k;
+            hoverBand = band;
+            setReading(readBand(field, k, band));
+          }
+          return;
+        }
+      }
+      hoverBand = -1;
       const hit = raycaster.intersectObject(terrain, false)[0];
       if (!hit) {
         marker.visible = false;
@@ -1185,6 +1282,7 @@ export default function Terrain3D() {
     const onLeave = () => {
       marker.visible = false;
       lastK = -1;
+      hoverBand = -1;
       setReading(null);
     };
     renderer.domElement.addEventListener("pointermove", onMove);
@@ -1273,16 +1371,39 @@ export default function Terrain3D() {
 
       // Bands pulling apart.
       explode += (explodeTarget - explode) * (1 - Math.exp(-dt * (reduce ? 60 : 4)));
+      // First they rise off the tile as a stack, then slide apart into the grid.
+      const rise = smooth(0, 0.55, explode);
+      const spread = smooth(0.35, 1, explode);
+      const bandY = field.maxY + 1.3;
       bandPlanes.forEach((m, i) => {
         const order = BANDS.length - 1 - i;
+        const [gx, gz] = BAND_GRID[i];
+        const s = lerp(1, BAND_SCALE, spread) * (i === hoverBand ? 1.03 : 1);
         m.visible = explode > 0.01;
-        m.position.y = field.maxY + 0.2 + (0.35 + order * 0.85) * explode;
-        (m.material as THREE.MeshBasicMaterial).opacity = 0.88 * explode;
-        ((m.children[0] as THREE.LineSegments).material as THREE.LineBasicMaterial).opacity = explode;
+        m.scale.set(s, s, 1);
+        m.position.set(
+          gx * 2.62 * spread,
+          lerp(field.maxY + 0.2, bandY, rise) + order * 0.55 * rise * (1 - spread),
+          gz * 2.62 * spread,
+        );
+        const mat = m.material as THREE.MeshBasicMaterial;
+        mat.opacity = explode;
+        mat.transparent = explode < 0.99;
+        const edge = (m.children[0] as THREE.LineSegments).material as THREE.LineBasicMaterial;
+        edge.opacity = explode;
+        edge.color.set(i === hoverBand ? "#ffffff" : BANDS[i].tint);
+        const label = bandLabels[i];
+        label.visible = spread > 0.5;
+        label.position.set(m.position.x, m.position.y + 0.5, m.position.z - (SIZE / 2) * s - 0.1);
+        (label.material as THREE.SpriteMaterial).opacity = smooth(0.5, 1, spread);
       });
-      controls.target.y += (lerp(0.6, 2.4, explode) - controls.target.y) * (1 - Math.exp(-dt * 4));
-      // Step back while the bands are apart so the whole stack stays in frame.
-      offset.subVectors(camera.position, controls.target).setLength(baseDistance * lerp(1, 1.15, explode));
+      controls.target.y += (lerp(0.6, bandY - 0.4, explode) - controls.target.y) * (1 - Math.exp(-dt * 4));
+      // Step back while the bands are apart so the whole grid stays in frame, and tilt to look down at it.
+      offset.subVectors(camera.position, controls.target);
+      sph.setFromVector3(offset);
+      if (clock < tiltUntil) sph.phi += (tiltPhi - sph.phi) * (1 - Math.exp(-dt * 3.5));
+      sph.radius = baseDistance * lerp(1, 1.12, explode);
+      offset.setFromSpherical(sph);
       camera.position.copy(controls.target).add(offset);
 
       // Clouds drift east and fade at the edges; the mask (or the bands) clears them.
@@ -1301,6 +1422,8 @@ export default function Terrain3D() {
       // Satellite: a slow circle when idle, over the scan line during a sweep.
       const satY = lerp(5.6, 7.6, explode);
       orbit.position.y = satY;
+      // Keep the satellite out of the way while the bands are laid out.
+      sat.group.visible = orbit.visible = explode < 0.3;
       (orbit.material as THREE.LineDashedMaterial).opacity = 0.35 * (sweepX === null ? 1 : 0.3);
       if (sweepX !== null) {
         target.set(sweepX, satY, 0);
@@ -1407,20 +1530,9 @@ export default function Terrain3D() {
               <small className="t3d-where">{reading.where}</small>
             </>
           ) : (
-            <span>Point at the land to read it</span>
+            <span>{exploded ? "Point at a band to read it" : "Point at the land to read it"}</span>
           )}
         </div>
-
-        {exploded && (
-          <ol className="t3d-bands" aria-label="Bands, top to bottom">
-            {BANDS.map((b) => (
-              <li key={b.id}>
-                <i style={{ background: b.tint }} />
-                <code>{b.id}</code> {b.name}
-              </li>
-            ))}
-          </ol>
-        )}
 
         {!failed && (
           <div className="t3d-frame" aria-hidden="true">
@@ -1460,8 +1572,15 @@ export default function Terrain3D() {
       </div>
 
       <figcaption>
-        <span>{info.formula}</span>
-        {info.legend && (
+        {exploded ? (
+          <span>
+            Each band is the light reflected in one slice of the spectrum; brighter means more. Plants are bright in{" "}
+            <strong>B8</strong> and dark in <strong>B4</strong>, which is what NDVI measures. Water is dark in B8.
+          </span>
+        ) : (
+          <span>{info.formula}</span>
+        )}
+        {!exploded && info.legend && (
           <span className={`t3d-legend t3d-legend-${layer}`}>
             <small>{info.legend[0]}</small>
             <i />
