@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import DownloadLab from "../components/downlab/DownloadLab";
 
 const SHORTCUTS: [string[], string][] = [
   [["Ctrl", "N"], "New request"],
@@ -97,6 +98,7 @@ export default function Features() {
               Earth Engine refuses any single request larger than 48 MB, which rules out most real study areas. GEE-Assist
               works around this without making you tile anything by hand.
             </p>
+            <DownloadLab />
             <ol className="plain-steps">
               <li>The request is split into chunks of 500 MB. You can change the chunk size for new downloads.</li>
               <li>

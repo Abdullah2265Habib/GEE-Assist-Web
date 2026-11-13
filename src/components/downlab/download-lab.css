@@ -1,0 +1,375 @@
+.dl-lab {
+  --dl-water: var(--ocean);
+  --dl-forest: color-mix(in srgb, var(--leaf) 70%, var(--ink));
+  --dl-crop: var(--leaf);
+  --dl-grass: color-mix(in srgb, var(--leaf) 50%, var(--star));
+  --dl-soil: color-mix(in srgb, var(--star) 55%, var(--muted));
+  margin: 28px 0 32px;
+  padding: clamp(16px, 3vw, 24px);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+.dl-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 28px;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+
+.dl-field {
+  display: grid;
+  gap: 6px;
+  font-size: var(--text-sm);
+  color: var(--muted);
+}
+
+.dl-field strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.dl-area {
+  flex: 1 1 240px;
+}
+
+.dl-area input[type="range"] {
+  width: 100%;
+  accent-color: var(--leaf);
+}
+
+.dl-area small {
+  font-size: var(--text-xs);
+}
+
+.dl-seg {
+  display: inline-flex;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.dl-seg button {
+  padding: 0.4em 0.8em;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font-size: var(--text-sm);
+}
+
+.dl-seg button + button {
+  border-left: 1px solid var(--border-strong);
+}
+
+.dl-seg button[aria-pressed="true"] {
+  background: var(--mint);
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.dl-seg button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.dl-stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(200px, 250px);
+  gap: 20px;
+}
+
+@media (max-width: 640px) {
+  .dl-stage {
+    grid-template-columns: 1fr;
+  }
+}
+
+.dl-map {
+  position: relative;
+  aspect-ratio: 1;
+  background: var(--foam);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  transition: border-color 0.3s var(--ease), box-shadow 0.3s var(--ease);
+}
+
+.dl-map svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.dl-map.is-rejected {
+  border-color: var(--error);
+  box-shadow: 0 0 0 3px var(--error-bg);
+  animation: dl-shake 0.45s var(--ease);
+}
+
+.dl-map.is-done {
+  border-color: var(--leaf);
+}
+
+.dl-p {
+  transition: fill 0.25s var(--ease);
+}
+
+.dl-p.wait.c0 {
+  fill: color-mix(in srgb, var(--leaf) 14%, var(--surface));
+}
+
+.dl-p.wait.c1 {
+  fill: color-mix(in srgb, var(--ocean) 22%, var(--surface));
+}
+
+.dl-p.run {
+  fill: color-mix(in srgb, var(--ocean) 30%, var(--surface));
+  stroke: var(--ocean);
+  stroke-width: 0.05;
+  animation: dl-pulse 0.8s ease-in-out infinite alternate;
+}
+
+.dl-p.run.can-oom {
+  cursor: pointer;
+}
+
+.dl-p.run.can-oom:hover {
+  fill: var(--error-bg);
+  stroke: var(--error);
+}
+
+.dl-p.done {
+  animation: dl-arrive 0.4s var(--ease);
+}
+
+.dl-p.t-water { fill: var(--dl-water); }
+.dl-p.t-forest { fill: var(--dl-forest); }
+.dl-p.t-crop { fill: var(--dl-crop); }
+.dl-p.t-grass { fill: var(--dl-grass); }
+.dl-p.t-soil { fill: var(--dl-soil); }
+
+.dl-oom {
+  fill: none;
+  stroke: var(--error);
+  stroke-width: 0.08;
+  pointer-events: none;
+  animation: dl-flash 0.9s ease-out forwards;
+}
+
+.dl-overlay {
+  position: absolute;
+  inset: auto 12px 12px;
+  display: grid;
+  gap: 4px;
+  padding: 12px 14px;
+  border-radius: var(--radius);
+  font-size: var(--text-sm);
+  animation: dl-rise 0.35s var(--ease);
+}
+
+.dl-overlay-err {
+  background: var(--error-bg);
+  border: 1px solid var(--error-border);
+  color: var(--error);
+}
+
+.dl-overlay-err code {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+.dl-overlay-ok {
+  background: color-mix(in srgb, var(--surface) 90%, transparent);
+  border: 1px solid var(--success-border);
+  color: var(--muted);
+  backdrop-filter: blur(4px);
+}
+
+.dl-overlay-ok strong {
+  font-family: var(--font-mono);
+  color: var(--success);
+}
+
+.dl-side {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.dl-progress {
+  height: 6px;
+  border-radius: 99px;
+  background: var(--foam);
+  overflow: hidden;
+}
+
+.dl-progress div {
+  height: 100%;
+  background: linear-gradient(90deg, var(--leaf), var(--ocean));
+  transition: width 0.2s linear;
+}
+
+.dl-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 0;
+}
+
+.dl-stats dt,
+.dl-label {
+  font-size: var(--text-xs);
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.dl-stats dd {
+  margin: 2px 0 0;
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.dl-stats dd span {
+  font-size: var(--text-sm);
+  color: var(--muted);
+}
+
+.dl-block {
+  display: grid;
+  gap: 6px;
+}
+
+.dl-block small {
+  font-size: var(--text-xs);
+  color: var(--muted);
+}
+
+.dl-slots {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 4px;
+}
+
+.dl-slots i {
+  height: 14px;
+  border-radius: 3px;
+  background: var(--foam);
+  border: 1px solid var(--border);
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.dl-slots i.on {
+  background: var(--ocean);
+  border-color: var(--ocean);
+}
+
+.dl-pieces {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-height: 26px;
+}
+
+.dl-piece {
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  background: var(--mint);
+  border: 1px solid var(--success-border);
+  color: var(--ink);
+  animation: dl-rise 0.3s var(--ease);
+}
+
+.dl-piece.is-merging {
+  background: var(--sky);
+  border-color: var(--info-border);
+  animation: dl-pulse 0.45s ease-in-out infinite alternate;
+}
+
+.dl-piece.is-final {
+  background: var(--leaf);
+  border-color: var(--leaf);
+  color: var(--on-primary);
+}
+
+.dl-log {
+  list-style: none;
+  margin: 0;
+  padding: 10px 12px;
+  min-height: 9.5em;
+  border-radius: var(--radius-sm);
+  background: var(--terminal-bg);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  line-height: 1.5;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  overflow: hidden;
+}
+
+.dl-log li { color: var(--terminal-text); }
+.dl-log li.ok { color: var(--terminal-prompt); }
+.dl-log li.err { color: var(--terminal-error); }
+.dl-log li.blue { color: var(--terminal-blue); }
+.dl-log li.out { color: var(--terminal-muted); }
+
+.dl-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.dl-lab figcaption {
+  margin-top: 12px;
+  font-size: var(--text-sm);
+  color: var(--muted);
+}
+
+.dl-lab figcaption strong {
+  color: var(--ink);
+}
+
+@keyframes dl-pulse {
+  from { opacity: 1; }
+  to { opacity: 0.55; }
+}
+
+@keyframes dl-arrive {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes dl-flash {
+  from { opacity: 1; stroke-width: 0.14; }
+  to { opacity: 0; stroke-width: 0.04; }
+}
+
+@keyframes dl-rise {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes dl-shake {
+  20%, 60% { transform: translateX(-6px); }
+  40%, 80% { transform: translateX(6px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dl-p.run,
+  .dl-piece.is-merging,
+  .dl-map.is-rejected {
+    animation: none;
+  }
+}
