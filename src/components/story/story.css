@@ -168,6 +168,32 @@
   }
 }
 
+/* Screens with scaling > 100% (e.g. 125%, 150%) or compact vertical viewport */
+@media (max-height: 840px) {
+  .story-stage {
+    padding-top: clamp(8px, 1.8vh, 18px);
+    padding-bottom: 6px;
+    gap: clamp(12px, 2vw, 24px);
+  }
+
+  .story-copy {
+    gap: 14px;
+  }
+
+  .story-caption h3 {
+    font-size: clamp(1.4rem, 1.1rem + 1vw, 2.1rem);
+    margin-bottom: 0.25em;
+  }
+
+  .story-caption p {
+    font-size: var(--text-sm);
+  }
+
+  .story-rail button {
+    padding: 3px 0;
+  }
+}
+
 /* Reduced motion: no pinning, every chapter written out, the last frame shown. */
 .story.is-static {
   height: auto;
@@ -249,34 +275,70 @@
 }
 
 .st-sat-panel {
-  fill: #2f5f9e;
-  stroke: #9cc7f2;
-  stroke-width: 1;
+  fill: #1e3a8a;
+  stroke: #7dd3fc;
+  stroke-width: 1.2;
+  vector-effect: non-scaling-stroke;
 }
 
 .st-sat-cells line {
-  stroke: #9cc7f2;
-  stroke-width: 0.6;
-  opacity: 0.7;
+  stroke: #bae6fd;
+  stroke-width: 0.8;
+  opacity: 0.85;
+  vector-effect: non-scaling-stroke;
 }
 
 .st-sat-body {
-  fill: #dfe7ea;
-  stroke: #8aa1a8;
-  stroke-width: 1;
+  fill: #f8fafc;
+  stroke: #94a3b8;
+  stroke-width: 1.2;
+  vector-effect: non-scaling-stroke;
 }
 
 .st-sat-band {
-  fill: #e3a83b;
+  fill: #f59e0b;
 }
 
 .st-sat-strut {
-  stroke: #b8c6cb;
-  stroke-width: 2;
+  stroke: #cbd5e1;
+  stroke-width: 2.2;
+  vector-effect: non-scaling-stroke;
 }
 
 .st-sat-dish {
-  fill: #dfe7ea;
+  fill: #f1f5f9;
+  stroke: #94a3b8;
+  stroke-width: 1;
+}
+
+/* Enhanced visibility for downlink satellite (Chapter 3 & 4) */
+.st-sat-downlink .st-sat-panel {
+  fill: #1d4ed8;
+  stroke: #93c5fd;
+  stroke-width: 1.4;
+}
+
+.st-sat-downlink .st-sat-body {
+  fill: #ffffff;
+  stroke: #cbd5e1;
+  stroke-width: 1.3;
+}
+
+.st-sat-halo {
+  pointer-events: none;
+}
+
+.st-sat-beacon {
+  fill: var(--st-leaf);
+  filter: drop-shadow(0 0 3px var(--st-leaf));
+}
+
+.st-sat-beacon-ring {
+  fill: none;
+  stroke: var(--st-leaf);
+  stroke-width: 1.2;
+  opacity: 0.65;
+  vector-effect: non-scaling-stroke;
 }
 
 /* The orbiting satellite turns about its horizontal axis: each view folds about its own centre. */
@@ -350,15 +412,24 @@
   opacity: 0;
 }
 
+.st-beam-guide {
+  stroke: var(--st-leaf);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 8;
+  opacity: 0.28;
+  vector-effect: non-scaling-stroke;
+}
+
 .st-wave {
   fill: none;
   stroke: var(--st-leaf);
-  stroke-width: 3;
+  stroke-width: 2.5;
   vector-effect: non-scaling-stroke;
 }
 
 .st-packet {
   fill: var(--st-leaf);
+  filter: drop-shadow(0 0 3px rgb(94 211 168 / 0.6));
 }
 
 .st-atmosphere {

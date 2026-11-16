@@ -44,10 +44,15 @@ const H = 900;
 const EARTH = { cx: 600, cy: 520, r: 300 };
 const ORBIT = { rx: 470, ry: 120, tilt: (-14 * Math.PI) / 180 };
 const SAT_END_T = -0.3;
-const SAT_DOWN = { x: 600, y: 150 };
+const SAT_DOWN = { x: 260, y: 190 };
 /** Where the dish head turns, and its feed horn (the point the camera dives into). */
-const PIVOT = { x: 600, y: 668 };
-const FEED = { x: 600, y: 506 };
+const PIVOT = { x: 920, y: 668 };
+const FEED = { x: 789, y: 573 };
+const BEAM_DX = FEED.x - SAT_DOWN.x;
+const BEAM_DY = FEED.y - SAT_DOWN.y;
+const BEAM_DIST = Math.hypot(BEAM_DX, BEAM_DY);
+const BEAM_ANGLE = (Math.atan2(BEAM_DY, BEAM_DX) * 180) / Math.PI;
+const DISH_AIM_ANGLE = (Math.atan2(SAT_DOWN.x - PIVOT.x, PIVOT.y - SAT_DOWN.y) * 180) / Math.PI;
 const FRAME = { x: 480, y: 230, size: 360 };
 const AOI = { x: 600, y: 300, size: 400 };
 const LENS = { cx: 600, cy: 450, r: 290 };
@@ -114,11 +119,12 @@ const chapterAt = (t: number) => {
 
 /* ----------------------------------------------------------- satellite */
 
-function SatelliteShape() {
+function SatelliteShape({ isDownlink = false }: { isDownlink?: boolean }) {
   const cells = (x: number) =>
     [0, 1, 2, 3].map((i) => <line key={i} x1={x + 11.5 * (i + 1)} y1={-12} x2={x + 11.5 * (i + 1)} y2={12} />);
   return (
-    <g className="st-sat-shape">
+    <g className={`st-sat-shape ${isDownlink ? "st-sat-downlink" : ""}`}>
+      {isDownlink && <circle className="st-sat-halo" cx={0} cy={0} r={58} fill="url(#st-sat-glow)" />}
       <line className="st-sat-strut" x1={-24} y1={0} x2={-14} y2={0} />
       <line className="st-sat-strut" x1={14} y1={0} x2={24} y2={0} />
       <rect className="st-sat-panel" x={-80} y={-13} width={56} height={26} rx={2} />
@@ -134,6 +140,12 @@ function SatelliteShape() {
       <line className="st-sat-strut" x1={0} y1={-20} x2={0} y2={-32} />
       <path className="st-sat-dish" d="M -9 -32 Q 0 -40 9 -32 Z" />
       <circle className="st-sat-lens" cx={0} cy={22} r={6} />
+      {isDownlink && (
+        <>
+          <circle className="st-sat-beacon" cx={0} cy={22} r={3.2} />
+          <circle className="st-sat-beacon-ring" cx={0} cy={22} r={7} />
+        </>
+      )}
     </g>
   );
 }
@@ -267,10 +279,10 @@ export default function OrbitStory() {
         .set($(".st-downlink"), { opacity: 0 }, 0)
         .set($(".st-horizon"), { translateY: 320 }, 0)
         .set($(".st-dish"), { translateY: 460 }, 0)
-        .set($(".st-dish-head"), { rotate: -38 }, 0)
+        .set($(".st-dish-head"), { rotate: 15 }, 0)
         .set($(".st-status"), { opacity: 0 }, 0)
-        .set($$(".st-wave"), { opacity: 0 }, 0)
-        .set($$(".st-packet"), { opacity: 0 }, 0)
+        .set($$(".st-wave"), { opacity: 0, scale: 0.2 }, 0)
+        .set($$(".st-packet"), { opacity: 0, translateX: 0 }, 0)
         .set($$(".st-hud"), { opacity: 0 }, 0)
         .set($(".st-decoder"), { opacity: 0 }, 0)
         .set($$(".st-band"), { opacity: 0, translateX: 0, translateY: 0, scale: 1 }, 0)
@@ -307,18 +319,27 @@ export default function OrbitStory() {
         .add($$(".st-hud"), { opacity: [0, 1], translateY: [12, 0], duration: 200, delay: stagger(45) }, 2450)
 
         /* 3 · Down to Earth */
-        .add($(".st-lens"), { scale: [1, 0.12], translateY: [0, SAT_DOWN.y - LENS.cy], opacity: [1, 0], duration: 420, ease: "inQuad" }, 2780)
+        .add($(".st-lens"), {
+          scale: [1, 0.12],
+          translateX: [0, SAT_DOWN.x - LENS.cx],
+          translateY: [0, SAT_DOWN.y - LENS.cy],
+          opacity: [1, 0],
+          duration: 420,
+          ease: "inQuad",
+        }, 2780)
         .add($(".st-ground"), { opacity: [0, 1], duration: 120 }, 2850)
         .add($(".st-downlink"), { opacity: [0, 1], duration: 220 }, 2950)
         .add($(".st-horizon"), { translateY: [320, 0], duration: 420, ease: "outQuad" }, 2850)
-        .add($$(".st-wave"), { scale: [0.15, 5.6], opacity: [0, 0.9, 0], duration: 480, delay: stagger(90) }, 3010)
+        .add($$(".st-wave"), { scale: [0.2, 5.8], opacity: [0, 0.95, 0], duration: 520, delay: stagger(90) }, 3010)
 
         /* 4 · Caught on the ground: the dish rises, then its head swings round to track the
            satellite and settles, while the pedestal stays put. */
         .add($(".st-dish"), { translateY: [460, 0], duration: 400, ease: "outQuad" }, 3080)
-        .add($(".st-dish-head"), { rotate: [-38, 14, -8, 4, -2, 0], duration: 850, ease: "inOutSine" }, 3250)
-        .add($$(".st-wave"), { scale: [0.15, 5.6], opacity: [0, 0.9, 0], duration: 460, delay: stagger(80) }, 3530)
-        .add($$(".st-packet"), { translateY: [0, FEED.y - SAT_DOWN.y - 40], opacity: [0, 1, 1, 0], duration: 340, delay: stagger(50) }, 3530)
+        .add($(".st-dish-head"), { rotate: [15, -68, -48, -56, -53, DISH_AIM_ANGLE], duration: 850, ease: "inOutSine" }, 3250)
+        .add($$(".st-packet-a"), { translateX: [0, BEAM_DIST - 55], opacity: [0, 1, 1, 0], duration: 420, delay: stagger(45) }, 3320)
+        .add($$(".st-wave"), { scale: [0.2, 5.8], opacity: [0, 0.95, 0], duration: 480, delay: stagger(80) }, 3480)
+        .add($$(".st-packet-b"), { translateX: [0, BEAM_DIST - 55], opacity: [0, 1, 1, 0], duration: 420, delay: stagger(45) }, 3550)
+        .add($$(".st-wave"), { scale: [0.2, 5.8], opacity: [0, 0.95, 0], duration: 460, delay: stagger(75) }, 3720)
         .add($(".st-status"), { opacity: [0, 1], translateY: [10, 0], duration: 250 }, 3480)
 
         /* 5 · Decoded into bands: dive into the feed horn, decode, split the bands out. */
@@ -432,7 +453,12 @@ export default function OrbitStory() {
             <clipPath id="st-reveal-clip">
               <rect className="st-reveal-rect" x={FRAME.x} y={FRAME.y} width={FRAME.size} height={0} />
             </clipPath>
-            <path id="st-wave-shape" d="M -60 0 A 60 60 0 0 0 60 0" />
+            <radialGradient id="st-sat-glow" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor="#38bdf8" stopOpacity="0.45" />
+              <stop offset="55%" stopColor="#0284c7" stopOpacity="0.15" />
+              <stop offset="100%" stopColor="#0284c7" stopOpacity="0" />
+            </radialGradient>
+            <path id="st-wave-shape" d="M 0 -36 A 42 42 0 0 1 0 36" />
             <clipPath id="st-screen-clip">
               <rect x={SCREEN.x} y={SCREEN.y} width={SCREEN.w} height={SCREEN.h} rx={SCREEN.r} />
             </clipPath>
@@ -517,18 +543,47 @@ export default function OrbitStory() {
           {/* 3 + 4 · Downlink and ground station */}
           <g className="st-ground" style={{ transformOrigin: `${FEED.x}px ${FEED.y}px` }}>
             <g className="st-downlink">
-              <g className="st-waves">
-                {[0, 1, 2, 3, 4].map((i) => (
-                  <use key={i} href="#st-wave-shape" className="st-wave" x={SAT_DOWN.x} y={SAT_DOWN.y + 20} style={{ transformOrigin: `${SAT_DOWN.x}px ${SAT_DOWN.y + 20}px` }} />
-                ))}
+              <g className="st-signal-beam" transform={`translate(${SAT_DOWN.x} ${SAT_DOWN.y}) rotate(${BEAM_ANGLE})`}>
+                <line className="st-beam-guide" x1={35} y1={0} x2={BEAM_DIST - 30} y2={0} />
+                <g className="st-waves">
+                  {[0, 1, 2, 3, 4].map((i) => (
+                    <use
+                      key={i}
+                      href="#st-wave-shape"
+                      className="st-wave"
+                      x={30}
+                      y={0}
+                      style={{ transformOrigin: "30px 0px" }}
+                    />
+                  ))}
+                </g>
+                <g className="st-packets">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <rect
+                      key={`pa-${i}`}
+                      className="st-packet st-packet-a"
+                      x={35}
+                      y={((i % 3) - 1) * 9 - 4.5}
+                      width={14}
+                      height={9}
+                      rx={2.5}
+                    />
+                  ))}
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <rect
+                      key={`pb-${i}`}
+                      className="st-packet st-packet-b"
+                      x={35}
+                      y={((i % 3) - 1) * 9 - 4.5}
+                      width={14}
+                      height={9}
+                      rx={2.5}
+                    />
+                  ))}
+                </g>
               </g>
-              <g className="st-packets">
-                {Array.from({ length: 8 }).map((_, i) => (
-                  <rect key={i} className="st-packet" x={SAT_DOWN.x - 7 + ((i % 3) - 1) * 18} y={SAT_DOWN.y + 30} width={14} height={9} rx={2} />
-                ))}
-              </g>
-              <g transform={`translate(${SAT_DOWN.x} ${SAT_DOWN.y}) scale(1.25)`}>
-                <SatelliteShape />
+              <g transform={`translate(${SAT_DOWN.x} ${SAT_DOWN.y}) rotate(18) scale(1.65)`}>
+                <SatelliteShape isDownlink />
               </g>
             </g>
             <g className="st-horizon">
@@ -536,20 +591,20 @@ export default function OrbitStory() {
               <path className="st-land-far" d="M -600 700 C -300 650 -100 690 100 668 S 400 618 560 648 S 900 640 1050 612 S 1400 652 1800 628 L 1800 1600 L -600 1600 Z" />
               <path className="st-land-mid" d="M -600 734 C -300 714 0 734 200 721 S 500 700 700 717 S 1000 704 1200 721 S 1600 709 1800 719 L 1800 1600 L -600 1600 Z" />
               <path className="st-land-near" d="M -600 760 Q 600 738 1800 760 L 1800 1600 L -600 1600 Z" />
-              <path className="st-land-road" d="M 640 749 Q 760 752 900 751" />
+              <path className="st-land-road" d="M 440 749 Q 620 752 780 751" />
               {/* control building with lit windows */}
-              <rect className="st-building" x={792} y={706} width={116} height={44} rx={3} />
-              <rect className="st-building-roof" x={786} y={700} width={128} height={8} rx={2} />
+              <rect className="st-building" x={520} y={706} width={116} height={44} rx={3} />
+              <rect className="st-building-roof" x={514} y={700} width={128} height={8} rx={2} />
               {[0, 1, 2, 3].map((i) => (
-                <rect key={i} className="st-window" x={806 + i * 25} y={720} width={14} height={9} rx={1.5} />
+                <rect key={i} className="st-window" x={534 + i * 25} y={720} width={14} height={9} rx={1.5} />
               ))}
-              <line className="st-mast" x1={890} y1={700} x2={890} y2={672} />
-              <circle className="st-mast-light" cx={890} cy={670} r={3.5} />
+              <line className="st-mast" x1={618} y1={700} x2={618} y2={672} />
+              <circle className="st-mast-light" cx={618} cy={670} r={3.5} />
               {/* a smaller dish */}
-              <line className="st-mast" x1={396} y1={751} x2={396} y2={722} />
-              <path className="st-small-dish" d="M 372 708 Q 396 736 420 708 Z" transform="rotate(-24 396 716)" />
+              <line className="st-mast" x1={360} y1={751} x2={360} y2={722} />
+              <path className="st-small-dish" d="M 336 708 Q 360 736 384 708 Z" transform="rotate(-24 360 716)" />
               {/* trees */}
-              {[[226, 756, 15], [254, 758, 11], [1000, 756, 13], [1026, 758, 17], [1058, 760, 10]].map(([x, y, r], i) => (
+              {[[160, 756, 14], [188, 758, 10], [330, 756, 13], [690, 756, 12], [716, 758, 15], [1080, 756, 14], [1110, 758, 11]].map(([x, y, r], i) => (
                 <g key={i}>
                   <line className="st-trunk" x1={x} y1={y} x2={x} y2={y - r * 1.4} />
                   <circle className="st-tree" cx={x} cy={y - r * 1.6} r={r} />
@@ -557,8 +612,8 @@ export default function OrbitStory() {
               ))}
             </g>
             <g className="st-dish">
-              <path className="st-dish-base" d="M 554 750 L 646 750 L 630 722 L 570 722 Z" />
-              <rect className="st-dish-neck" x={589} y={PIVOT.y} width={22} height={56} />
+              <path className="st-dish-base" d="M 874 750 L 966 750 L 950 722 L 890 722 Z" />
+              <rect className="st-dish-neck" x={909} y={PIVOT.y} width={22} height={56} />
               <g className="st-dish-head" style={{ transformOrigin: `${PIVOT.x}px ${PIVOT.y}px` }}>
                 <g transform={`translate(${PIVOT.x} ${PIVOT.y})`}>
                   <rect className="st-dish-neck" x={-9} y={-24} width={18} height={24} />
@@ -569,15 +624,15 @@ export default function OrbitStory() {
                   <line className="st-dish-strut" x1={104} y1={-72} x2={0} y2={-160} />
                   <line className="st-dish-strut" x1={0} y1={-66} x2={0} y2={-160} />
                   <rect className="st-dish-horn" x={-8} y={-172} width={16} height={14} rx={3} />
-                  <circle className="st-dish-feed" cx={0} cy={FEED.y - PIVOT.y} r={6} />
+                  <circle className="st-dish-feed" cx={0} cy={-162} r={6} />
                 </g>
               </g>
               <circle className="st-dish-hinge" cx={PIVOT.x} cy={PIVOT.y} r={8} />
             </g>
             <g className="st-status">
-              <rect x={760} y={540} width={330} height={78} rx={12} />
-              <text x={782} y={572}>Receiving · 4 MB pieces</text>
-              <text x={782} y={600} className="st-status-sub">8 at a time · written to disk on arrival</text>
+              <rect x={760} y={390} width={330} height={78} rx={12} />
+              <text x={782} y={422}>Receiving · 4 MB pieces</text>
+              <text x={782} y={450} className="st-status-sub">8 at a time · written to disk on arrival</text>
             </g>
           </g>
 
