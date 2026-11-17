@@ -33,6 +33,7 @@ export default function Account() {
     ["Phone", user.phone_number ?? "None"],
     ["Signs in with", user.auth_provider === "google" ? "Google" : "Username and password"],
     ["Role", user.role === "admin" ? "Administrator" : "User"],
+    ["Desktop app", user.app_version ? `v${user.app_version}` : "Not used yet"],
     ["Member since", fmt(user.created_at)],
     ["Last sign-in", fmt(user.last_login_at)],
   ];

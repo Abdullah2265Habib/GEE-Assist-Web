@@ -181,12 +181,105 @@ function Overview({ go }: { go: (t: Tab) => void }) {
 
 /* --------------------------------------------------------------- Feedback */
 
+function FeedbackEmailReplyModal({
+  feedback,
+  user,
+  onClose,
+  onSuccess,
+}: {
+  feedback: Feedback;
+  user?: User;
+  onClose: () => void;
+  onSuccess: () => void;
+}) {
+  const [emailText, setEmailText] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  const recipientEmail = feedback.email || user?.email;
+
+  const handleSend = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!emailText.trim()) return;
+    setBusy(true);
+    setErr(null);
+    try {
+      await adminApi.updateFeedback(feedback.id, {
+        reply_email: emailText.trim(),
+      });
+      onSuccess();
+      onClose();
+    } catch (ex) {
+      setErr(ex instanceof Error ? ex.message : "Failed to send email reply.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="modal-overlay" onClick={onClose} role="dialog" aria-modal="true">
+      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
+          <h3>Reply to User via Email</h3>
+          <button type="button" className="modal-close-btn" onClick={onClose} aria-label="Close">
+            ×
+          </button>
+        </div>
+        <form onSubmit={handleSend} style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+          <div className="modal-body">
+            {err && (
+              <div className="notice notice-error" style={{ marginBottom: "12px" }}>
+                <p>{err}</p>
+              </div>
+            )}
+            <div style={{ marginBottom: "12px", fontSize: "var(--text-sm)" }}>
+              <p style={{ margin: "0 0 6px 0" }}>
+                <strong>Recipient:</strong> {recipientEmail || "No email available for this user"}
+              </p>
+              <p style={{ margin: "0 0 6px 0" }}>
+                <strong>User:</strong> {user?.full_name || feedback.username || feedback.user_id}
+              </p>
+              <div style={{ background: "var(--surface-sunken, rgba(0,0,0,0.15))", padding: "10px", borderRadius: "var(--radius)", marginTop: "8px" }}>
+                <strong>Feedback message:</strong>
+                <p style={{ margin: "4px 0 0 0", whiteSpace: "pre-wrap" }}>{feedback.message}</p>
+              </div>
+            </div>
+
+            <div className="field">
+              <label htmlFor="reply-msg" style={{ fontWeight: 600 }}>Your Reply Email</label>
+              <textarea
+                id="reply-msg"
+                className="textarea"
+                rows={6}
+                maxLength={4000}
+                placeholder="Type your response to the user here..."
+                value={emailText}
+                onChange={(e) => setEmailText(e.target.value)}
+                required
+              />
+            </div>
+          </div>
+          <div className="modal-header" style={{ justifyContent: "flex-end", gap: "10px", borderTop: "1px solid var(--border)", borderBottom: "none" }}>
+            <button type="button" className="btn btn-secondary" onClick={onClose} disabled={busy}>
+              Cancel
+            </button>
+            <button type="submit" className="btn btn-primary" disabled={busy || !emailText.trim() || !recipientEmail}>
+              {busy ? "Sending…" : "Send Email Reply"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 function FeedbackAdmin({ byId }: { byId: Map<string, User> }) {
   const [status, setStatus] = useState<FeedbackStatus | "">("open");
   const [category, setCategory] = useState<FeedbackCategory | "">("");
   const [skip, setSkip] = useState(0);
   const [page, setPage] = useState<{ total: number; items: Feedback[] } | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [replyTarget, setReplyTarget] = useState<Feedback | null>(null);
 
   const load = useCallback(() => {
     setPage(null);
@@ -231,12 +324,21 @@ function FeedbackAdmin({ byId }: { byId: Map<string, User> }) {
             <li key={f.id} className="entry">
               <div className="entry-head">
                 <span className="entry-cat">{f.category === "ui" ? "Hard to use" : f.category === "performance" ? "Slow" : f.category === "bug" ? "Bug" : "Other"}</span>
-                <FeedbackStatusPill status={f.status} />
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <FeedbackStatusPill status={f.status} appVersion={f.app_version} />
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    style={{ fontSize: "var(--text-xs)", padding: "2px 8px" }}
+                    onClick={() => setReplyTarget(f)}
+                  >
+                    Reply via Email
+                  </button>
+                </div>
               </div>
               <p className="entry-body">{f.message}</p>
               <p className="entry-meta">
                 <Who id={f.user_id} byId={byId} /> · {fmt(f.created_at)}
-                {f.app_version && ` · version ${f.app_version}`}
               </p>
               <ReviewEditor
                 status={f.status}
@@ -252,6 +354,18 @@ function FeedbackAdmin({ byId }: { byId: Map<string, User> }) {
         </ul>
       )}
       {page && <Pager skip={skip} total={page.total} onChange={setSkip} />}
+
+      {replyTarget && (
+        <FeedbackEmailReplyModal
+          feedback={replyTarget}
+          user={byId.get(replyTarget.user_id)}
+          onClose={() => setReplyTarget(null)}
+          onSuccess={() => {
+            alert("Email reply sent successfully!");
+            load();
+          }}
+        />
+      )}
     </>
   );
 }
@@ -440,6 +554,7 @@ function UsersAdmin({ onChanged }: { onChanged: () => void }) {
                 <th scope="col">User</th>
                 <th scope="col">Email</th>
                 <th scope="col">Role</th>
+                <th scope="col">Desktop app</th>
                 <th scope="col">Access</th>
                 <th scope="col">Last sign-in</th>
                 <th scope="col"><span className="visually-hidden">Actions</span></th>
@@ -459,6 +574,7 @@ function UsersAdmin({ onChanged }: { onChanged: () => void }) {
                       {u.email && !u.email_verified && <span className="pill pill-red">Not confirmed</span>}
                     </td>
                     <td>{u.role === "admin" ? <span className="pill pill-blue">Administrator</span> : "User"}</td>
+                    <td>{u.app_version ? <span className="pill pill-blue">v{u.app_version}</span> : <span className="muted-note">—</span>}</td>
                     <td>{u.is_active ? <span className="pill pill-green">Can sign in</span> : <span className="pill pill-red">Disabled</span>}</td>
                     <td className="nowrap">{u.last_login_at ? fmt(u.last_login_at) : "Never"}</td>
                     <td className="row-actions">

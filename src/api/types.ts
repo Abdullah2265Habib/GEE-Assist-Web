@@ -14,6 +14,7 @@ export interface User {
   is_active: boolean;
   created_at: string;
   last_login_at: string | null;
+  app_version?: string | null;
 }
 
 export interface TokenResponse {
@@ -73,6 +74,8 @@ export interface Page<T> {
 export interface Rating {
   id: string;
   user_id: string;
+  username?: string | null;
+  email?: string | null;
   score: number;
   comment: string | null;
   app_version: string | null;
@@ -92,6 +95,8 @@ export type FeedbackStatus = "open" | "in_review" | "resolved";
 export interface Feedback {
   id: string;
   user_id: string;
+  username?: string | null;
+  email?: string | null;
   category: FeedbackCategory;
   message: string;
   app_version: string | null;
@@ -106,6 +111,8 @@ export type SuggestionStatus = "pending" | "planned" | "implemented" | "rejected
 export interface Suggestion {
   id: string;
   user_id: string;
+  username?: string | null;
+  email?: string | null;
   title: string;
   description: string;
   status: SuggestionStatus;
