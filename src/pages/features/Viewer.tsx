@@ -225,7 +225,7 @@ export function ViewerChapter() {
 
       <section className="section">
         <div className="container">
-          <SectionHead n="01" title="Try it">
+          <SectionHead title="Try it">
             A made-up Sentinel-2 tile with a reservoir, a river, forest on the hills, crops and a town. Switch views
             and point at it, as you would in the app.
           </SectionHead>
@@ -237,7 +237,7 @@ export function ViewerChapter() {
 
       <section className="section band-soft">
         <div className="container">
-          <SectionHead n="02" title="One file, many views">
+          <SectionHead title="One file, many views">
             The views depend on the file's bands. Scroll to peel them apart.
           </SectionHead>
           <PeelScene />
@@ -247,7 +247,7 @@ export function ViewerChapter() {
       <section className="section band-soft">
         <div className="container split">
           <div>
-            <SectionHead n="03" title="Analysis results keep their colours">
+            <SectionHead title="Analysis results keep their colours">
               Open a saved result's .tif and the viewer adds an Analysis colours switch under the view.
             </SectionHead>
             <Reveal delay={100}>

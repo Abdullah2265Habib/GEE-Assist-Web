@@ -228,7 +228,7 @@ export function AiExplanationChapter() {
 
       <section className="section band-soft">
         <div className="container">
-          <SectionHead n="01" title="What Gemini sees, and what it says">
+          <SectionHead title="What Gemini sees, and what it says">
             On the left the page shows exactly what Gemini is sent; the explanation appears on the right.
           </SectionHead>
           <ExplanationPage />

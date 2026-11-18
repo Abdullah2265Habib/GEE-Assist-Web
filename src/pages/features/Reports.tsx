@@ -140,7 +140,7 @@ export function ReportsChapter() {
 
       <section className="section band-soft assemble-section">
         <div className="container">
-          <SectionHead n="01" title="How a report is put together">
+          <SectionHead title="How a report is put together">
             Keep scrolling: the pages come together in the order the PDF has them.
           </SectionHead>
           <Assemble />

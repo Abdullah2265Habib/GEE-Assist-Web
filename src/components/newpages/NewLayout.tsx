@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { Reveal, useScrollProgress } from "../motion/motion";
 
@@ -22,51 +22,6 @@ export const FEATURE_CHAPTERS = [
     blurb: "Turn an explanation into an A4 PDF with the result's pictures, colour bars and tables.",
   },
 ];
-
-/** Sticky strip of links to the chapters; the chapter on screen is highlighted. */
-export function FeatureNav() {
-  const [active, setActive] = useState("basics");
-  useEffect(() => {
-    // The chapter whose start is the last one above 40% of the window is the one being read.
-    let raf = 0;
-    const update = () => {
-      raf = 0;
-      const line = window.innerHeight * 0.4;
-      let current = FEATURE_CHAPTERS[0].id;
-      for (const c of FEATURE_CHAPTERS) {
-        const el = document.getElementById(c.id);
-        if (el && el.getBoundingClientRect().top <= line) current = c.id;
-      }
-      setActive(current);
-    };
-    const onScroll = () => {
-      if (!raf) raf = requestAnimationFrame(update);
-    };
-    update();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-      cancelAnimationFrame(raf);
-    };
-  }, []);
-  return (
-    <nav className="new-nav" aria-label="Features">
-      <div className="container new-nav-inner">
-        <ul>
-          {FEATURE_CHAPTERS.map((c) => (
-            <li key={c.id}>
-              <a href={`#${c.id}`} className={active === c.id ? "active" : ""} aria-current={active === c.id || undefined}>
-                {c.label}
-              </a>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </nav>
-  );
-}
 
 /** The opening of a chapter: eyebrow, title, lede, and an illustration that drifts as you scroll. */
 export function Chapter({
@@ -118,15 +73,10 @@ export function Chapter({
   );
 }
 
-/** Section heading with a number, used inside the chapters. */
-export function SectionHead({ n, title, children }: { n?: string; title: ReactNode; children?: ReactNode }) {
+/** Section heading used inside the chapters. */
+export function SectionHead({ title, children }: { title: ReactNode; children?: ReactNode }) {
   return (
     <Reveal className="new-section-head">
-      {n && (
-        <span className="new-section-n" aria-hidden="true">
-          {n}
-        </span>
-      )}
       <h3 className="new-section-title">{title}</h3>
       {children && <p className="lede">{children}</p>}
     </Reveal>

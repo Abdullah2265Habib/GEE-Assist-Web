@@ -1,8 +1,7 @@
 import { lazy, Suspense, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import DownloadLab from "../components/downlab/DownloadLab";
 import EarthLoader from "../components/loader/EarthLoader";
-import { FeatureNav } from "../components/newpages/NewLayout";
 import { ScrollProgress } from "../components/motion/motion";
 import { WorkflowChapter } from "./features/Workflow";
 import { ViewerChapter } from "./features/Viewer";
@@ -11,32 +10,10 @@ import { ReportsChapter } from "./features/Reports";
 
 const Terrain3D = lazy(() => import("../components/terrain/Terrain3D"));
 
-const SHORTCUTS: [string[], string][] = [
-  [["Ctrl", "N"], "New request"],
-  [["Ctrl", "1"], "Dashboard"],
-  [["Ctrl", "2"], "Query input"],
-  [["Ctrl", "3"], "Downloads"],
-  [["Ctrl", "4"], "Account"],
-  [["Ctrl", "B"], "Show or hide the side bar"],
-  [["Ctrl", "`"], "Show or hide the terminal"],
-  [["F11"], "Full screen"],
-  [["Ctrl", "Q"], "Exit"],
-  [["Ctrl", "5"], "Analysis"],
-  [["Ctrl", "6"], "Show analysis table"],
-  [["Ctrl", "7"], "Reports"],
-  [["Ctrl", "Shift", "N"], "New project"],
-  [["Ctrl", "Shift", "O"], "Open project"],
-  [["Ctrl", "O"], "Open GeoTIFF"],
-  [["Ctrl", ","], "Settings"],
-];
-
 const SECTIONS = [
   { id: "query", label: "Asking in plain words" },
   { id: "form", label: "The parameter form" },
   { id: "downloads", label: "Large downloads" },
-  { id: "terminal", label: "The terminal" },
-  { id: "accounts", label: "Accounts" },
-  { id: "shortcuts", label: "Menus and shortcuts" },
 ];
 
 export default function Features() {
@@ -75,8 +52,6 @@ export default function Features() {
           <Terrain3D />
         </Suspense>
       </div>
-
-      <FeatureNav />
 
       <div className="container doc-layout" id="basics">
         <nav className="doc-toc" aria-label="On this page">
@@ -162,66 +137,6 @@ export default function Features() {
               The Downloads page shows progress, speed, time left and disk usage for each download, with Start, Pause and
               Cancel. Pausing keeps the finished parts, even after you close the app.
             </p>
-          </section>
-
-          <section id="terminal">
-            <h2>The terminal</h2>
-            <p>
-              gkonsol is a command line inside GEE-Assist. Open it from the side bar or with <kbd>Ctrl</kbd>+<kbd>`</kbd>.
-              It can fill the form, start and watch downloads, show a live speed chart, and check your Earth Engine sign-in
-              step by step with <code>gee verify</code>. <code>doctor</code> checks everything at once.
-            </p>
-            <p>
-              <Link to="/terminal">Try gkonsol in your browser</Link>
-            </p>
-          </section>
-
-          <section id="accounts">
-            <h2>Accounts</h2>
-            <p>
-              Sign in with a username and password or with Google. New accounts confirm their email address with a link;
-              the app waits on a “Check your email” screen and signs you in as soon as the link is opened.
-            </p>
-            <p>
-              <strong>Keep me signed in</strong> stores your session in the Windows Credential Manager, so the next launch
-              opens straight on the dashboard. Passwords are hashed with Argon2id on the server and never stored in the app.
-            </p>
-            <p>
-              Administrators get a <strong>Manage users</strong> window for changing roles and enabling or disabling
-              accounts.
-            </p>
-          </section>
-
-          <section id="shortcuts">
-            <h2>Menus and shortcuts</h2>
-            <p>
-              A menu bar runs along the top of every page, as in Word or Excel: File, Edit, View, Terminal, Options and
-              Help. The side bar on the left opens Query Input, Downloads and the terminal.
-            </p>
-            <table className="data-table shortcuts">
-              <caption className="visually-hidden">Keyboard shortcuts</caption>
-              <thead>
-                <tr>
-                  <th scope="col">Keys</th>
-                  <th scope="col">Does</th>
-                </tr>
-              </thead>
-              <tbody>
-                {SHORTCUTS.map(([keys, what]) => (
-                  <tr key={what}>
-                    <td>
-                      {keys.map((k, i) => (
-                        <span key={k}>
-                          {i > 0 && "+"}
-                          <kbd>{k}</kbd>
-                        </span>
-                      ))}
-                    </td>
-                    <td>{what}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
           </section>
         </div>
       </div>
