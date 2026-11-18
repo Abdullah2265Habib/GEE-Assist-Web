@@ -8,8 +8,7 @@ export default function Footer() {
         <div className="footer-about">
           <p className="footer-name">GEE-Assist</p>
           <p>
-            A Windows app for finding, downloading and analysing Google Earth Engine imagery. Free and open source
-            under the GNU GPL v3.
+            A Windows app for finding, downloading and analysing Google Earth Engine imagery.
           </p>
         </div>
         <nav aria-label="Product">
