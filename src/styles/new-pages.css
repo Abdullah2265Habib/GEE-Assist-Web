@@ -2342,53 +2342,244 @@
 
 .peel-sticky {
   position: sticky;
-  top: 130px;
-  height: calc(100vh - 160px);
-  display: grid;
-  place-items: center;
-  perspective: 1400px;
+  top: 126px;
+  height: calc(100vh - 150px);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
   --t: clamp(0, (var(--sp, 0) - 0.18) * 2.6, 1);
 }
 
+.peel.is-open .peel-sticky {
+  --t: 1;
+}
+
+.peel-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 40px;
+}
+
+.peel-bar p {
+  margin: 0;
+}
+
+.peel-back {
+  padding: 6px 14px;
+  font-size: var(--text-sm);
+  animation: proc-in 0.4s var(--ease);
+}
+
+.peel-stage {
+  position: relative;
+  flex: 1;
+  max-height: 600px;
+  perspective: 1400px;
+}
+
 .peel-layer {
-  grid-area: 1 / 1;
-  width: min(560px, 80vw);
+  position: absolute;
+  display: block;
+  padding: 0;
+  border: 0;
+  background: none;
+  text-align: left;
+  color: inherit;
   transform-style: preserve-3d;
-  transform: rotateX(calc(var(--t) * 56deg)) rotateZ(calc(var(--t) * -22deg))
-    translateZ(calc((var(--i) - 2) * var(--t) * 90px));
-  transition: transform 0.1s linear;
+  cursor: pointer;
+  transition:
+    left 0.75s var(--ease),
+    top 0.75s var(--ease),
+    width 0.75s var(--ease),
+    transform 0.12s linear;
+}
+
+.peel.is-open .peel-layer,
+.peel.is-moving .peel-layer {
+  transition:
+    left 0.75s var(--ease),
+    top 0.75s var(--ease),
+    width 0.75s var(--ease),
+    transform 0.5s var(--ease);
+}
+
+.peel-layer.is-front {
+  cursor: default;
+}
+
+/* What you see of a layer. It moves on hover while the button around it stays put, and it ignores the
+   pointer, so the hover always belongs to the card whose resting place is under the pointer. */
+.peel-visual {
+  position: relative;
+  display: block;
+  pointer-events: none;
+  transition: transform 0.35s var(--ease);
+}
+
+.peel.is-open .peel-layer.is-hot:not(.is-front) .peel-visual {
+  transform: translateX(-22px) scale(1.04);
+}
+
+@media (max-width: 720px) {
+  .peel.is-open .peel-layer.is-hot:not(.is-front) .peel-visual {
+    transform: translateY(-8px);
+  }
 }
 
 .peel-img {
+  display: block;
   aspect-ratio: 128 / 84;
   border-radius: var(--radius);
   background-size: cover;
   image-rendering: pixelated;
   border: 3px solid var(--surface);
   box-shadow: 0 30px 50px -30px color-mix(in srgb, var(--ink) 80%, transparent);
+  transition:
+    box-shadow 0.3s var(--ease),
+    border-color 0.3s var(--ease),
+    filter 0.3s var(--ease);
+}
+
+.peel-layer.is-hot:not(.is-front) .peel-img {
+  border-color: var(--fx-a);
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--fx-a) 35%, transparent),
+    0 30px 50px -24px color-mix(in srgb, var(--ink) 80%, transparent);
+}
+
+.peel.is-open .peel-layer:not(.is-front):not(.is-hot) .peel-img {
+  filter: saturate(0.75) brightness(0.92);
+}
+
+.peel-tag {
+  position: absolute;
+  left: 10px;
+  top: 10px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  opacity: 0;
+  transition: opacity 0.3s var(--ease);
+}
+
+.peel.is-open .peel-layer:not(.is-front) .peel-tag {
+  opacity: 1;
+}
+
+.peel-layer.is-hot .peel-tag {
+  background: var(--fx-a);
+  color: var(--fx-on);
+  border-color: var(--fx-a);
 }
 
 .peel-cap {
   position: absolute;
-  left: calc(100% + 18px);
-  top: 50%;
-  width: 220px;
+  left: 0;
+  right: 0;
+  top: calc(100% + 14px);
   display: grid;
-  gap: 2px;
-  font-size: var(--text-xs);
-  opacity: var(--t);
-  transform: rotateZ(calc(var(--t) * 22deg)) rotateX(calc(var(--t) * -56deg)) translateY(-50%);
-  transform-origin: left center;
+  gap: 4px;
+  font-size: var(--text-sm);
+  color: var(--text);
+  animation: proc-in 0.6s var(--ease) 0.35s both;
 }
 
 .peel-cap strong {
-  font-size: var(--text-sm);
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
   color: var(--ink);
 }
 
-@media (max-width: 880px) {
-  .peel-cap {
-    display: none;
+.peel-list {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  translate: 0 -50%;
+  width: 34%;
+  list-style: none;
+  margin: 0;
+  padding: 0 0 0 20px;
+  border-left: 1px solid var(--border-strong);
+  display: grid;
+  gap: 6px;
+  opacity: var(--t);
+  animation: proc-in 0.5s var(--ease);
+}
+
+.peel-list button {
+  display: grid;
+  gap: 2px;
+  width: 100%;
+  text-align: left;
+  padding: 8px 12px;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  background: none;
+  color: var(--text);
+  font-size: var(--text-sm);
+  transition:
+    background 0.25s var(--ease),
+    border-color 0.25s var(--ease),
+    transform 0.25s var(--ease);
+}
+
+.peel-list button strong {
+  color: var(--ink);
+}
+
+.peel-list button:hover,
+.peel-list button.is-hot {
+  background: var(--surface);
+  border-color: var(--border);
+  transform: translateX(-4px);
+}
+
+@media (max-width: 720px) {
+  .peel {
+    height: auto;
+  }
+
+  .peel-sticky {
+    position: static;
+    height: auto;
+    --t: 1;
+  }
+
+  .peel-stage {
+    flex: none;
+    height: 72vw;
+    max-height: none;
+  }
+
+  .peel.is-open .peel-stage {
+    height: 118vw;
+  }
+
+  .peel-tag {
+    left: 4px;
+    top: 4px;
+    padding: 1px 6px;
+    font-size: 10px;
+    white-space: nowrap;
+    max-width: calc(100% - 8px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .peel-list {
+    position: static;
+    translate: none;
+    width: auto;
+    margin-top: 16px;
+    padding: 0;
+    border: 0;
   }
 }
 

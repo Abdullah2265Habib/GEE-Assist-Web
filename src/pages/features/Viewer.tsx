@@ -1,4 +1,4 @@
-import { useMemo, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { Reveal, useScrollProgress } from "../../components/motion/motion";
 import { Chapter, SectionHead } from "../../components/newpages/NewLayout";
 import RasterViewer from "../../components/raster/RasterViewer";
@@ -26,27 +26,151 @@ function ViewStack() {
   );
 }
 
-/** The four views peeled apart as you scroll through the section. */
+const LAYERS = [
+  { t: "True colour", cls: "vs-true", d: "Red, green and blue bands, stretched between their 2nd and 98th percentiles." },
+  { t: "False colour", cls: "vs-false", d: "NIR shown as red, so healthy vegetation glows red and water is near black." },
+  { t: "NDVI", cls: "vs-ndvi", d: "Fixed range −0.2 to 0.8, so a colour means the same in every file." },
+  { t: "NDWI", cls: "vs-ndwi", d: "Fixed range −0.5 to 0.5: brown land, blue water." },
+  { t: "Land cover", cls: "vs-lc", d: "Dynamic World classes in their official colours." },
+];
+
+function useNarrow(px: number) {
+  const q = `(max-width: ${px}px)`;
+  const [narrow, setNarrow] = useState(() => typeof window !== "undefined" && window.matchMedia(q).matches);
+  useEffect(() => {
+    const m = window.matchMedia(q);
+    const on = () => setNarrow(m.matches);
+    m.addEventListener("change", on);
+    return () => m.removeEventListener("change", on);
+  }, [q]);
+  return narrow;
+}
+
+/**
+ * The views as a stack that peels apart as you scroll, with their descriptions beside it. Clicking a
+ * layer opens it flat on the left; the others wait in a small stack on the right, ready to swap in.
+ */
 function PeelScene() {
   const [ref] = useScrollProgress<HTMLDivElement>();
+  const [open, setOpen] = useState<number | null>(null);
+  const [hot, setHot] = useState<number | null>(null);
+  const [moving, setMoving] = useState(false);
+  const narrow = useNarrow(720);
+  const timer = useRef(0);
+
+  const choose = (i: number | null) => {
+    setOpen(i);
+    setHot(null);
+    setMoving(true);
+    window.clearTimeout(timer.current);
+    timer.current = window.setTimeout(() => setMoving(false), 800);
+  };
+  useEffect(() => () => window.clearTimeout(timer.current), []);
+
+  // The waiting layers, top of the stack first (land cover), as in the list beside the stack.
+  const rest = LAYERS.map((_, i) => i)
+    .filter((i) => i !== open)
+    .reverse();
+
+  const place = (i: number): CSSProperties => {
+    if (open === null) {
+      return {
+        left: narrow ? "6%" : "2%",
+        top: narrow ? "10%" : "16%",
+        width: narrow ? "88%" : "54%",
+        zIndex: i,
+        transform: `rotateX(calc(var(--t) * 56deg)) rotateZ(calc(var(--t) * -22deg)) translateZ(calc(${i - 2} * var(--t) * 90px))`,
+      };
+    }
+    if (i === open) return { left: 0, top: 0, width: narrow ? "100%" : "57%", zIndex: 10, transform: "none" };
+    const k = rest.indexOf(i);
+    if (narrow) {
+      return {
+        left: `${k * 25.4}%`,
+        top: "78%",
+        width: "23.5%",
+        zIndex: hot === i ? 20 : 5,
+        transform: "none",
+      };
+    }
+    return {
+      left: "64%",
+      top: `${k * 17}%`,
+      width: "34%",
+      zIndex: hot === i ? 20 : 5 + k,
+      // The hover lift is on .peel-visual inside, never here: if the card itself moved, it could slide
+      // out from under the pointer, hand the hover to the card behind and slide back, over and over.
+      transform: "perspective(1000px) rotateY(-14deg)",
+    };
+  };
+
   return (
-    <div className="peel" ref={ref}>
+    <div className={`peel${open !== null ? " is-open" : ""}${moving ? " is-moving" : ""}`} ref={ref}>
       <div className="peel-sticky">
-        {[
-          ["True colour", "vs-true", "Red, green and blue bands, stretched between their 2nd and 98th percentiles."],
-          ["False colour", "vs-false", "NIR shown as red, so healthy vegetation glows red and water is near black."],
-          ["NDVI", "vs-ndvi", "Fixed range −0.2 to 0.8, so a colour means the same in every file."],
-          ["NDWI", "vs-ndwi", "Fixed range −0.5 to 0.5: brown land, blue water."],
-          ["Land cover", "vs-lc", "Dynamic World classes in their official colours."],
-        ].map(([t, cls, d], i) => (
-          <div key={t} className="peel-layer" style={{ "--i": i } as CSSProperties}>
-            <div className={`peel-img ${cls}`} style={bg(cls)} />
-            <div className="peel-cap">
-              <strong>{t}</strong>
-              <span>{d}</span>
-            </div>
-          </div>
-        ))}
+        <div className="peel-bar">
+          {open === null ? (
+            <p className="muted-note">Click a layer, or its name, to open it.</p>
+          ) : (
+            <>
+              <p className="muted-note">
+                {narrow
+                  ? "Tap a layer below to swap it in."
+                  : "Point at a layer on the right to pick it out, click to swap it in."}
+              </p>
+              <button type="button" className="btn btn-secondary peel-back" onClick={() => choose(null)}>
+                ← Back to the stack
+              </button>
+            </>
+          )}
+        </div>
+        <div className="peel-stage">
+          {LAYERS.map((l, i) => (
+            <button
+              type="button"
+              key={l.t}
+              className={`peel-layer${hot === i ? " is-hot" : ""}${open === i ? " is-front" : ""}`}
+              style={place(i)}
+              onClick={() => open !== i && choose(i)}
+              onMouseEnter={() => setHot(i)}
+              onMouseLeave={() => setHot(null)}
+              onFocus={() => setHot(i)}
+              onBlur={() => setHot(null)}
+              aria-label={open === i ? `${l.t}, open` : `Open ${l.t}`}
+              aria-pressed={open === i}
+            >
+              <span className="peel-visual">
+                <span className="peel-img" style={bg(l.cls)} />
+                <span className="peel-tag">{l.t}</span>
+                {open === i && (
+                  <span className="peel-cap">
+                    <strong>{l.t}</strong>
+                    <span>{l.d}</span>
+                  </span>
+                )}
+              </span>
+            </button>
+          ))}
+          {open === null && (
+            <ul className="peel-list">
+              {LAYERS.map((l, i) => ({ l, i }))
+                .reverse()
+                .map(({ l, i }) => (
+                  <li key={l.t}>
+                    <button
+                      type="button"
+                      className={hot === i ? "is-hot" : ""}
+                      onMouseEnter={() => setHot(i)}
+                      onMouseLeave={() => setHot(null)}
+                      onClick={() => choose(i)}
+                    >
+                      <strong>{l.t}</strong>
+                      <span>{l.d}</span>
+                    </button>
+                  </li>
+                ))}
+            </ul>
+          )}
+        </div>
       </div>
     </div>
   );
