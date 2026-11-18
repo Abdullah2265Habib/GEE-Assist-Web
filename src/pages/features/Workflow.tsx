@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { CountUp } from "../../components/motion/motion";
 import { Chapter } from "../../components/newpages/NewLayout";
 
@@ -5,36 +6,50 @@ const FLOW = [
   {
     icon: "key",
     title: "Your own keys",
+    name: "Your own keys",
+    short: ["Earth Engine ID and", "Gemini key, kept safe"],
     body: "The first sign-in asks for your Earth Engine project ID and a Gemini API key, with the steps to get both. The key is kept in Windows Credential Manager, never in a file.",
   },
   {
     icon: "folder",
     title: "Create a project",
+    name: "Projects",
+    short: ["All your work kept", "in one folder"],
     body: "Everything you do lives in a project folder: downloads, analysis results, AI explanations and PDF reports. Rename it or move it and everything follows.",
   },
   {
     icon: "down",
     title: "Download",
+    name: "Download",
+    short: ["GeoTIFFs saved straight", "into the project"],
     body: "The parameter form says only what to download, and the GeoTIFF lands in the project's downloads folder. Save to… copies it anywhere else.",
   },
   {
     icon: "chart",
     title: "Analyse",
+    name: "Analysis",
+    short: ["Four analyses, run on", "your GPU or CPU"],
     body: "Pick one of four analyses and its processes. Processes the dataset cannot run are folded away with the reason. It runs on an NVIDIA GPU when there is one.",
   },
   {
     icon: "eye",
     title: "Look at it",
+    name: "GeoTIFF viewer",
+    short: ["True colour, NDVI,", "land cover and more"],
     body: "The viewer shows true colour, false colour, NDVI, NDWI, land cover or any band, with the value under the pointer and the legend for the view.",
   },
   {
     icon: "spark",
     title: "Explain with AI",
+    name: "AI explanation",
+    short: ["Gemini explains", "the result for you"],
     body: "Gemini is sent the result GeoTIFF, a preview of each layer and all the metadata, and writes an explanation that is kept in the project.",
   },
   {
     icon: "pdf",
     title: "Make a PDF report",
+    name: "PDF reports",
+    short: ["An A4 report with", "pictures and tables"],
     body: "One click turns an explanation into an A4 PDF with the result's pictures, colour bars, headings and tables. Export it anywhere.",
   },
 ] as const;
@@ -97,9 +112,11 @@ function OrbitArt() {
     const a = (i / FLOW.length) * Math.PI * 2 - Math.PI / 2;
     return { ...s, x: 200 + Math.cos(a) * 140, y: 200 + Math.sin(a) * 140 };
   });
+  const [hot, setHot] = useState<number | null>(null);
+  const cur = hot === null ? null : FLOW[hot];
   return (
     <div className="orbit-art">
-      <svg viewBox="0 0 400 400" role="img" aria-label="The new workflow: keys, project, download, analyse, view, explain, report">
+      <svg viewBox="0 0 400 400" role="group" aria-label="The workflow: keys, projects, download, analysis, viewer, AI explanation, PDF reports">
         <defs>
           <linearGradient id="orbit-grad" x1="0" x2="1" y1="0" y2="1">
             <stop offset="0" stopColor="var(--fx-a)" />
@@ -109,17 +126,45 @@ function OrbitArt() {
         <circle cx="200" cy="200" r="140" className="orbit-ring" />
         <circle cx="200" cy="200" r="140" className="orbit-ring-dash" stroke="url(#orbit-grad)" />
         <circle cx="200" cy="200" r="78" className="orbit-core" />
-        <text x="200" y="194" className="orbit-core-t1">
-          GEE-Assist
-        </text>
-        <text x="200" y="216" className="orbit-core-t2">
-          what's new
-        </text>
+        {cur ? (
+          <g key={hot} className="orbit-core-text" aria-live="polite">
+            <text x="200" y="186" className="orbit-core-name">
+              {cur.name}
+            </text>
+            <text x="200" y="210" className="orbit-core-desc">
+              <tspan x="200">{cur.short[0]}</tspan>
+              <tspan x="200" dy="16">
+                {cur.short[1]}
+              </tspan>
+            </text>
+          </g>
+        ) : (
+          <g key="idle" className="orbit-core-text">
+            <text x="200" y="194" className="orbit-core-t1">
+              GEE-Assist
+            </text>
+            <text x="200" y="216" className="orbit-core-t2">
+              what's new
+            </text>
+          </g>
+        )}
         <circle r="6" className="orbit-pulse">
           <animateMotion dur="9s" repeatCount="indefinite" path="M200,60 a140,140 0 1,1 -0.01,0" />
         </circle>
         {nodes.map((n, i) => (
-          <g key={n.title} className="orbit-node" style={{ animationDelay: `${i * 0.12}s` }} transform={`translate(${n.x} ${n.y})`}>
+          <g
+            key={n.title}
+            className={`orbit-node${hot === i ? " is-hot" : ""}`}
+            style={{ animationDelay: `${i * 0.12}s` }}
+            transform={`translate(${n.x} ${n.y})`}
+            tabIndex={0}
+            aria-label={`${n.name}: ${n.short.join(" ")}`}
+            onMouseEnter={() => setHot(i)}
+            onMouseLeave={() => setHot(null)}
+            onFocus={() => setHot(i)}
+            onBlur={() => setHot(null)}
+            onClick={() => setHot(i)}
+          >
             <circle r="26" />
             <g transform="translate(-12 -12)" className="orbit-node-icon">
               <FlowGlyph name={n.icon} />
