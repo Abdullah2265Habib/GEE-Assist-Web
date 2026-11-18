@@ -9,7 +9,9 @@
 
 import type { TokenResponse } from "./types";
 
-export const API_BASE_URL: string = (import.meta.env.VITE_API_BASE_URL as string | undefined) || "/api";
+// A trailing slash would make "https://host//health", which the backend redirects, and browsers
+// refuse to follow a redirect on a cross-origin request, so it is trimmed here.
+export const API_BASE_URL: string = ((import.meta.env.VITE_API_BASE_URL as string | undefined) || "/api").replace(/\/+$/, "");
 
 const ACCESS_KEY = "gee-assist.access_token";
 const REFRESH_KEY = "gee-assist.refresh_token";
