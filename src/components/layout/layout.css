@@ -378,31 +378,6 @@
   font-size: var(--text-xs);
 }
 
-.backend-status {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-size: var(--text-xs);
-  color: var(--muted);
-}
-
-.status-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--subtle);
-  flex: none;
-}
-
-.backend-status.is-up .status-dot {
-  background: var(--leaf);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--leaf) 25%, transparent);
-}
-
-.backend-status.is-down .status-dot {
-  background: var(--error);
-}
-
 @media (max-width: 720px) {
   .footer-grid {
     grid-template-columns: 1fr 1fr;

@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom";
 import { BACKEND_GITHUB_URL, GITHUB_URL } from "../../config";
-import BackendStatus from "./BackendStatus";
 
 export default function Footer() {
   return (
@@ -12,7 +11,6 @@ export default function Footer() {
             A Windows app for finding, downloading and analysing Google Earth Engine imagery. Free and open source
             under the GNU GPL v3.
           </p>
-          <BackendStatus />
         </div>
         <nav aria-label="Product">
           <h2>Product</h2>
