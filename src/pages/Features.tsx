@@ -14,6 +14,10 @@ const SECTIONS = [
   { id: "query", label: "Asking in plain words" },
   { id: "form", label: "The parameter form" },
   { id: "downloads", label: "Large downloads" },
+  { id: "workflow", label: "Workflow" },
+  { id: "viewer", label: "GeoTIFF viewer" },
+  { id: "ai-explanation", label: "AI explanation" },
+  { id: "reports", label: "PDF reports" },
 ];
 
 export default function Features() {
