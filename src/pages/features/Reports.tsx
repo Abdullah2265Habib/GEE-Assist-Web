@@ -1,5 +1,4 @@
-import { useState, type CSSProperties } from "react";
-import { Reveal } from "../../components/motion/motion";
+import type { CSSProperties } from "react";
 import { useScrollProgress } from "../../components/motion/motion";
 import { Chapter, SectionHead } from "../../components/newpages/NewLayout";
 import { NDVI_RAMP, rampCss, viewUrl } from "../../components/raster/scene";
@@ -124,66 +123,6 @@ function Assemble() {
   );
 }
 
-type Row = { name: string; when: string; pdf: boolean; busy?: boolean };
-
-function ReportsList() {
-  const [rows, setRows] = useState<Row[]>([
-    { name: "Sentinel-2_…_Vegetation_NDVI_EVI_explanation", when: "today, 15:12", pdf: false },
-    { name: "Landsat-8_…_LST_LSTMapping_explanation", when: "today, 11:40", pdf: true },
-    { name: "Sentinel-1_…_Water_WaterBodyDetection_explanation", when: "16 Nov", pdf: true },
-  ]);
-  const [sel, setSel] = useState(0);
-  const create = () => {
-    setRows((r) => r.map((x, i) => (i === sel ? { ...x, busy: true } : x)));
-    window.setTimeout(() => setRows((r) => r.map((x, i) => (i === sel ? { ...x, busy: false, pdf: true } : x))), 1400);
-  };
-  const cur = rows[sel];
-  return (
-    <div className="rl">
-      <div className="rl-title">Reports</div>
-      <ul role="listbox" aria-label="Saved explanations">
-        {rows.map((r, i) => (
-          <li
-            key={r.name}
-            role="option"
-            aria-selected={i === sel}
-            className={i === sel ? "is-on" : ""}
-            onClick={() => setSel(i)}
-            onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && setSel(i)}
-            tabIndex={0}
-          >
-            <span className="rl-name">{r.name}</span>
-            <span className="muted-note">{r.when}</span>
-            {r.busy ? (
-              <span className="pill pill-blue rl-busy">Creating…</span>
-            ) : r.pdf ? (
-              <span className="pill pill-green">PDF</span>
-            ) : (
-              <span className="pill">No PDF yet</span>
-            )}
-          </li>
-        ))}
-      </ul>
-      <div className="btn-row">
-        <button type="button" className="btn btn-primary" onClick={create} disabled={cur.busy}>
-          {cur.pdf ? "Create again" : "Create PDF report"}
-        </button>
-        <button type="button" className="btn btn-secondary" disabled={!cur.pdf}>
-          Export PDF…
-        </button>
-        <button type="button" className="btn btn-quiet" disabled={!cur.pdf}>
-          Open PDF
-        </button>
-      </div>
-      {cur.busy && (
-        <span className="rl-progress" aria-hidden="true">
-          <span />
-        </span>
-      )}
-    </div>
-  );
-}
-
 export function ReportsChapter() {
   return (
     <>
@@ -199,53 +138,12 @@ export function ReportsChapter() {
         art={<PdfArt />}
       />
 
-      <section className="section">
-        <div className="container split">
-          <div>
-            <SectionHead n="01" title="The Reports page">
-              Open it from the dashboard's Reports card, View → Reports or <kbd>Ctrl</kbd>+<kbd>7</kbd>. It lists the
-              explanations saved in the open project, newest first, and whether each already has a PDF.
-            </SectionHead>
-            <Reveal delay={100}>
-              <p className="muted-note">
-                PDF report on the AI explanation page jumps here and creates that explanation's report at once. Try
-                Create PDF report on the first row.
-              </p>
-            </Reveal>
-          </div>
-          <Reveal variant="scale">
-            <ReportsList />
-          </Reveal>
-        </div>
-      </section>
-
       <section className="section band-soft assemble-section">
         <div className="container">
-          <SectionHead n="02" title="How a report is put together">
+          <SectionHead n="01" title="How a report is put together">
             Keep scrolling: the pages come together in the order the PDF has them.
           </SectionHead>
           <Assemble />
-        </div>
-      </section>
-
-      <section className="section">
-        <div className="container">
-          <SectionHead n="03" title="The details" />
-          <div className="small-grid">
-            {[
-              ["A4, numbered, bookmarked", "Pages are numbered and every heading is a bookmark, so a long report is easy to move around in."],
-              ["Written with markdown-pdf", "The PDF is made in the app's backend with markdown-pdf, through PyMuPDF."],
-              ["Kept in the project", "Saved as reports/<explanation>.pdf. Creating it again replaces it."],
-              ["Export anywhere", "Export PDF… saves a copy to Documents, a USB drive or anywhere else; the project keeps its own."],
-              ["Open it", "Open PDF opens the computer's PDF viewer; Open reports folder shows the folder."],
-              ["Missing picture?", "If the result .tif is no longer there, the report says so and has the explanation only."],
-            ].map(([t, d], i) => (
-              <Reveal key={t} delay={(i % 3) * 90} variant="flip" className="small-card">
-                <h3>{t}</h3>
-                <p>{d}</p>
-              </Reveal>
-            ))}
-          </div>
         </div>
       </section>
 

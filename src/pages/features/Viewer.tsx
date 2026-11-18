@@ -244,31 +244,10 @@ export function ViewerChapter() {
         </div>
       </section>
 
-      <section className="section">
-        <div className="container">
-          <SectionHead n="03" title="What the viewer shows" />
-          <div className="small-grid">
-            {[
-              ["Legend", "A colour bar with its range, the land-cover classes present, or which band is shown as red, green and blue."],
-              ["Under the pointer", "Latitude and longitude, every band's value read from the full-resolution file, and the index or class there."],
-              ["Details", "Size, bands, coordinate system, area, file size and path."],
-              ["Zoom and pan", "The mouse wheel zooms, dragging pans, double-click fits the picture again. Large files are drawn at most 1600 px across."],
-              ["No-data is clear", "No-data pixels are transparent instead of black, so the edge of a scene is obvious."],
-              ["Show on map", "Lays the current view over the Query Input map, with an opacity slider and Remove from map."],
-            ].map(([t, d], i) => (
-              <Reveal key={t} delay={(i % 3) * 90} variant="flip" className="small-card">
-                <h3>{t}</h3>
-                <p>{d}</p>
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      </section>
-
       <section className="section band-soft">
         <div className="container split">
           <div>
-            <SectionHead n="04" title="Analysis results keep their colours">
+            <SectionHead n="03" title="Analysis results keep their colours">
               Open a saved result's .tif and the viewer adds an Analysis colours switch under the view.
             </SectionHead>
             <Reveal delay={100}>

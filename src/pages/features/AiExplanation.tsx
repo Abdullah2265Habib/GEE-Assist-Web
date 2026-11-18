@@ -1,5 +1,4 @@
 import { useState, type ReactNode } from "react";
-import { Link } from "react-router-dom";
 import { Reveal, useInView, useTypewriter } from "../../components/motion/motion";
 import { Chapter, SectionHead } from "../../components/newpages/NewLayout";
 import { viewUrl } from "../../components/raster/scene";
@@ -212,29 +211,6 @@ function ExplanationPage() {
   );
 }
 
-function FeedbackMock() {
-  return (
-    <div className="fb">
-      <div className="fb-title">How is GEE-Assist working for you?</div>
-      <div className="fb-btns">
-        <Link to="/community?tab=rate" className="fb-btn">
-          <span aria-hidden="true">★</span>
-          Rate the app
-        </Link>
-        <Link to="/community?tab=feedback" className="fb-btn">
-          <span aria-hidden="true">✉</span>
-          Send feedback
-        </Link>
-        <Link to="/community?tab=suggest" className="fb-btn">
-          <span aria-hidden="true">✦</span>
-          Suggest a feature
-        </Link>
-      </div>
-      <span className="fb-later">Not now</span>
-    </div>
-  );
-}
-
 export function AiExplanationChapter() {
   return (
     <>
@@ -250,98 +226,12 @@ export function AiExplanationChapter() {
         art={<FlowArt />}
       />
 
-      <section className="section">
-        <div className="container">
-          <SectionHead n="01" title="Two ways in" />
-          <div className="two-notes">
-            <Reveal className="note-card" variant="left">
-              <h3>Explain with AI</h3>
-              <p>
-                Under any analysis result. If the result is not saved yet, its GeoTIFF is saved in the project's
-                analysis folder first, so the file sent to Gemini is always the one kept in the project.
-              </p>
-            </Reveal>
-            <Reveal className="note-card" variant="right" delay={100}>
-              <h3>AI Explanation in the side bar</h3>
-              <p>
-                Lists the open project's saved results, newest first, with their analysis, processes and date, and asks
-                which to explain. Without a project it asks you to open one; with no results yet it offers the Analysis
-                page.
-              </p>
-            </Reveal>
-          </div>
-        </div>
-      </section>
-
       <section className="section band-soft">
         <div className="container">
-          <SectionHead n="02" title="What Gemini sees, and what it says">
+          <SectionHead n="01" title="What Gemini sees, and what it says">
             On the left the page shows exactly what Gemini is sent; the explanation appears on the right.
           </SectionHead>
           <ExplanationPage />
-        </div>
-      </section>
-
-      <section className="section">
-        <div className="container">
-          <SectionHead n="03" title="When Gemini won't read the file">
-            Gemini does not read every file type. If it refuses the GeoTIFF, the request goes again with the previews
-            and metadata only, and the page says so.
-          </SectionHead>
-          <ol className="fallback">
-            {[
-              ["Upload", "The GeoTIFF goes up through the Gemini Files API."],
-              ["Ask", "Previews and the prompt are sent with it."],
-              ["Refused?", "Send again without the GeoTIFF, and say so on the page."],
-              ["Clean up", "The uploaded file is deleted again afterwards."],
-            ].map(([t, d], i) => (
-              <Reveal as="li" key={t} delay={i * 140} variant="up" className={i === 2 ? "is-warn" : ""}>
-                <strong>{t}</strong>
-                <span>{d}</span>
-              </Reveal>
-            ))}
-          </ol>
-        </div>
-      </section>
-
-      <section className="section band-soft">
-        <div className="container split">
-          <div>
-            <SectionHead n="04" title="Kept with the project">
-              Every explanation is saved as Markdown in the project's <code>explanation</code> folder, with the
-              metadata it was made from. Explaining the same result again keeps the earlier file.
-            </SectionHead>
-          </div>
-          <Reveal variant="right">
-            <ul className="file-list">
-              <li>
-                <code>explanation/Sentinel-2_…_Vegetation_NDVI_EVI_…_explanation.md</code>
-              </li>
-              <li>
-                <code>explanation/Sentinel-2_…_Vegetation_NDVI_EVI_…_explanation_2.md</code>
-              </li>
-              <li className="file-list-next">
-                → <a href="#reports">turn one into a PDF report</a>
-              </li>
-            </ul>
-          </Reveal>
-        </div>
-      </section>
-
-      <section className="section">
-        <div className="container split">
-          <div>
-            <SectionHead n="05" title="Then, tell us how it went">
-              After an AI explanation, when you go back to the dashboard from it, and after running an analysis, a small
-              window offers three ways to reply. Each opens a tab of this site's Community page.
-            </SectionHead>
-            <Reveal delay={100}>
-              <p className="muted-note">Help → Rate, feedback or suggestion… opens the same window at any time.</p>
-            </Reveal>
-          </div>
-          <Reveal variant="scale">
-            <FeedbackMock />
-          </Reveal>
         </div>
       </section>
 
