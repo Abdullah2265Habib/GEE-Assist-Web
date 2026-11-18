@@ -97,7 +97,8 @@ function PeelScene() {
       left: "64%",
       top: `${k * 17}%`,
       width: "34%",
-      zIndex: hot === i ? 20 : 5 + k,
+      // A hovered card keeps its place in the stack: it lifts, but the card below it still covers it.
+      zIndex: 5 + k,
       // The hover lift is on .peel-visual inside, never here: if the card itself moved, it could slide
       // out from under the pointer, hand the hover to the card behind and slide back, over and over.
       transform: "perspective(1000px) rotateY(-14deg)",
