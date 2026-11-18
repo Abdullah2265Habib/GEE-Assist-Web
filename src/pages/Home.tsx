@@ -6,6 +6,7 @@ import EarthLoader from "../components/loader/EarthLoader";
 import { ANALYSES, DATASETS, DATASET_CATEGORIES } from "../data/datasets";
 import { THEMES, useTheme } from "../theme/ThemeProvider";
 import { DOWNLOAD_URL } from "../config";
+import { NewStrip } from "../components/newpages/NewLayout";
 
 const Globe = lazy(() => import("../components/globe/Globe"));
 const Terminal = lazy(() => import("../components/terminal/Terminal"));
@@ -255,6 +256,11 @@ export default function Home() {
           <ThemePicker />
         </div>
       </section>
+
+      <NewStrip
+        title="New in the desktop app"
+        intro="Projects, four analyses, a GeoTIFF viewer, AI explanations from Gemini and PDF reports."
+      />
 
       <section className="section cta">
         <div className="container cta-inner">

@@ -31,6 +31,29 @@ export default function Footer() {
             </li>
           </ul>
         </nav>
+        <nav aria-label="New in the app">
+          <h2>New in the app</h2>
+          <ul>
+            <li>
+              <Link to="/whats-new">What's new</Link>
+            </li>
+            <li>
+              <Link to="/projects">Projects</Link>
+            </li>
+            <li>
+              <Link to="/analysis">Analysis</Link>
+            </li>
+            <li>
+              <Link to="/viewer">GeoTIFF viewer</Link>
+            </li>
+            <li>
+              <Link to="/ai-explanation">AI explanation</Link>
+            </li>
+            <li>
+              <Link to="/reports">PDF reports</Link>
+            </li>
+          </ul>
+        </nav>
         <nav aria-label="Project">
           <h2>Project</h2>
           <ul>

@@ -10,6 +10,7 @@ const NAV = [
   { to: "/terminal", label: "Terminal" },
   { to: "/about", label: "About" },
   { to: "/community", label: "Community" },
+  { to: "/whats-new", label: "What's new" },
 ];
 
 function initials(name: string): string {

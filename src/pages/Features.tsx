@@ -2,6 +2,7 @@ import { lazy, Suspense } from "react";
 import { Link } from "react-router-dom";
 import DownloadLab from "../components/downlab/DownloadLab";
 import EarthLoader from "../components/loader/EarthLoader";
+import { NewStrip } from "../components/newpages/NewLayout";
 
 const Terrain3D = lazy(() => import("../components/terrain/Terrain3D"));
 
@@ -15,6 +16,13 @@ const SHORTCUTS: [string[], string][] = [
   [["Ctrl", "`"], "Show or hide the terminal"],
   [["F11"], "Full screen"],
   [["Ctrl", "Q"], "Exit"],
+  [["Ctrl", "5"], "Analysis"],
+  [["Ctrl", "6"], "Show analysis table"],
+  [["Ctrl", "7"], "Reports"],
+  [["Ctrl", "Shift", "N"], "New project"],
+  [["Ctrl", "Shift", "O"], "Open project"],
+  [["Ctrl", "O"], "Open GeoTIFF"],
+  [["Ctrl", ","], "Settings"],
 ];
 
 const SECTIONS = [
@@ -24,6 +32,7 @@ const SECTIONS = [
   { id: "terminal", label: "The terminal" },
   { id: "accounts", label: "Accounts" },
   { id: "shortcuts", label: "Menus and shortcuts" },
+  { id: "new", label: "New in the app" },
 ];
 
 export default function Features() {
@@ -201,6 +210,11 @@ export default function Features() {
           </section>
         </div>
       </div>
+
+      <NewStrip
+        title="New since this page was written"
+        intro="The desktop app now keeps work in projects, analyses what you download, explains results with Gemini and writes PDF reports."
+      />
     </>
   );
 }
