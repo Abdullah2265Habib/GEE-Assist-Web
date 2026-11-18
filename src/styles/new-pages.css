@@ -1,6 +1,79 @@
 /* The "What's new" pages: Overview, Projects, Analysis, GeoTIFF viewer, AI explanation, PDF reports.
    Only the site's colour tokens are used, so every theme works. */
 
+/* Accent colours for the feature sections, per theme. They follow each theme's own palette the way
+   the globe does (globe.css): on the grey theme they are sage and cool greys rather than mint and blue. */
+
+:root {
+  --fx-a: #2e9e78;
+  --fx-a-hover: #237d60;
+  --fx-b: #2f7fc1;
+  --fx-on: #ffffff;
+  --fx-soft: #eaf6f0;
+}
+
+:root[data-theme="dark-green"] {
+  --fx-a: #5ed3a8;
+  --fx-a-hover: #86e3c1;
+  --fx-b: #6cb8f0;
+  --fx-on: #0b1f21;
+  --fx-soft: #21403f;
+}
+
+:root[data-theme="dark-grey"] {
+  --fx-a: #c3ccc8;
+  --fx-a-hover: #dde3e0;
+  --fx-b: #9aa4ab;
+  --fx-on: #121212;
+  --fx-soft: #2b2e2d;
+}
+
+:root[data-theme="earth"] {
+  --fx-a: #2d6a4f;
+  --fx-a-hover: #1f5039;
+  /* A lighter forest green rather than the ocean blue, so gradients and links match the buttons. */
+  --fx-b: #4a8a63;
+  --fx-on: #ffffff;
+  --fx-soft: #e3ead6;
+}
+
+:root[data-theme="navy"] {
+  --fx-a: #e6d3a8;
+  --fx-a-hover: #f3e7c9;
+  --fx-b: #cdb98a;
+  --fx-on: #0b1a35;
+  --fx-soft: #1a3056;
+}
+
+:root[data-theme="aurora"] {
+  --fx-a: #3ee6a0;
+  --fx-a-hover: #7af0c0;
+  --fx-b: #a68bff;
+  --fx-on: #06140f;
+  --fx-soft: #15302e;
+}
+
+/* Primary buttons and links follow the same accents, so a theme looks like one palette. */
+.btn-primary {
+  background: var(--fx-a);
+  color: var(--fx-on);
+}
+
+.btn-primary:hover {
+  background: var(--fx-a-hover);
+  color: var(--fx-on);
+}
+
+.new-page :is(p, li, span, dd) > a:not(.btn),
+.features-page .doc-body a:not(.btn) {
+  color: var(--fx-b);
+}
+
+.new-page :is(p, li, span, dd) > a:not(.btn):hover,
+.features-page .doc-body a:not(.btn):hover {
+  color: var(--fx-a);
+}
+
 /* Scroll reveal ----------------------------------------------------------- */
 
 .reveal {
@@ -56,7 +129,7 @@
   inset: 0 0 auto 0;
   height: 3px;
   z-index: 60;
-  background: linear-gradient(90deg, var(--leaf), var(--ocean));
+  background: linear-gradient(90deg, var(--fx-a), var(--fx-b));
   transform-origin: left;
   transform: scaleX(var(--p, 0));
   pointer-events: none;
@@ -109,7 +182,7 @@
 }
 
 .new-nav a:hover {
-  background: var(--mint);
+  background: var(--fx-soft);
   color: var(--ink);
 }
 
@@ -126,8 +199,8 @@
   text-transform: uppercase;
   padding: 3px 9px;
   border-radius: 999px;
-  color: var(--on-primary);
-  background: linear-gradient(120deg, var(--leaf), var(--ocean));
+  color: var(--fx-on);
+  background: linear-gradient(120deg, var(--fx-a), var(--fx-b));
   animation: badge-shine 3s ease-in-out infinite;
   background-size: 200% 100%;
 }
@@ -183,7 +256,7 @@
   height: 22vw;
   left: 40%;
   bottom: -10vw;
-  background: color-mix(in srgb, var(--leaf) 30%, transparent);
+  background: color-mix(in srgb, var(--fx-a) 30%, transparent);
   animation-delay: -9s;
 }
 
@@ -235,7 +308,7 @@
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--leaf);
+  color: var(--fx-a);
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 999px;
@@ -247,8 +320,8 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--leaf);
-  box-shadow: 0 0 0 0 color-mix(in srgb, var(--leaf) 60%, transparent);
+  background: var(--fx-a);
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--fx-a) 60%, transparent);
   animation: ping 2s infinite;
 }
 
@@ -262,7 +335,7 @@
 }
 
 .grad-text {
-  background: linear-gradient(100deg, var(--leaf), var(--ocean), var(--leaf));
+  background: linear-gradient(100deg, var(--fx-a), var(--fx-b), var(--fx-a));
   background-size: 200% 100%;
   -webkit-background-clip: text;
   background-clip: text;
@@ -295,7 +368,7 @@
   height: 8px;
   margin-left: -2px;
   border-radius: 2px;
-  background: var(--leaf);
+  background: var(--fx-a);
   animation: cue 1.8s ease-in-out infinite;
 }
 
@@ -374,8 +447,8 @@
   display: inline-block;
   font-family: var(--font-mono);
   font-size: var(--text-xs);
-  color: var(--leaf);
-  border-bottom: 2px solid var(--leaf);
+  color: var(--fx-a);
+  border-bottom: 2px solid var(--fx-a);
   padding-bottom: 2px;
   margin-bottom: 14px;
 }
@@ -440,7 +513,7 @@
   top: 50%;
   translate: 0 -50%;
   font-size: 2.4rem;
-  color: var(--leaf);
+  color: var(--fx-a);
   transition: transform 0.4s var(--ease);
 }
 
@@ -510,8 +583,8 @@
 }
 
 .orbit-pulse {
-  fill: var(--leaf);
-  filter: drop-shadow(0 0 6px var(--leaf));
+  fill: var(--fx-a);
+  filter: drop-shadow(0 0 6px var(--fx-a));
 }
 
 .orbit-node {
@@ -520,13 +593,13 @@
 
 .orbit-node circle {
   fill: var(--surface);
-  stroke: var(--leaf);
+  stroke: var(--fx-a);
   stroke-width: 2;
   transition: fill 0.3s;
 }
 
 .orbit-node:hover circle {
-  fill: var(--mint);
+  fill: var(--fx-soft);
 }
 
 .orbit-node-icon {
@@ -583,7 +656,7 @@
 
 .feature-card:hover {
   transform: translateY(-6px);
-  border-color: var(--leaf);
+  border-color: var(--fx-a);
   box-shadow: 0 26px 50px -34px color-mix(in srgb, var(--ink) 55%, transparent);
 }
 
@@ -603,14 +676,14 @@
 .feature-card-n {
   font-family: var(--font-mono);
   font-size: var(--text-xs);
-  color: var(--leaf);
+  color: var(--fx-a);
 }
 
 .feature-card-go {
   position: absolute;
   left: 24px;
   bottom: 18px;
-  color: var(--leaf);
+  color: var(--fx-a);
   font-size: 1.3rem;
   transition: transform 0.35s var(--ease);
 }
@@ -700,12 +773,12 @@
 }
 
 .flow-rail .is-done {
-  color: var(--leaf);
+  color: var(--fx-a);
 }
 
 .flow-rail .is-on {
-  background: var(--leaf);
-  color: var(--on-primary);
+  background: var(--fx-a);
+  color: var(--fx-on);
   transform: scale(1.08);
 }
 
@@ -718,7 +791,7 @@
   padding: 24px;
   text-align: center;
   animation: stage-in 0.6s var(--ease);
-  background: radial-gradient(70% 70% at 50% 40%, var(--mint), transparent 70%);
+  background: radial-gradient(70% 70% at 50% 40%, var(--fx-soft), transparent 70%);
 }
 
 @keyframes stage-in {
@@ -734,9 +807,9 @@
   width: 84px;
   height: 84px;
   border-radius: 24px;
-  color: var(--on-primary);
-  background: linear-gradient(135deg, var(--leaf), var(--ocean));
-  box-shadow: 0 18px 36px -18px var(--leaf);
+  color: var(--fx-on);
+  background: linear-gradient(135deg, var(--fx-a), var(--fx-b));
+  box-shadow: 0 18px 36px -18px var(--fx-a);
   animation: float 4s ease-in-out infinite;
 }
 
@@ -774,7 +847,7 @@
   display: block;
   height: 100%;
   border-radius: inherit;
-  background: linear-gradient(90deg, var(--leaf), var(--ocean));
+  background: linear-gradient(90deg, var(--fx-a), var(--fx-b));
   transition: width 0.6s var(--ease);
 }
 
@@ -799,7 +872,7 @@
 
 .flow-steps li.is-active {
   opacity: 1;
-  border-color: var(--leaf);
+  border-color: var(--fx-a);
 }
 
 .flow-steps h3 {
@@ -814,7 +887,7 @@
 .flow-n {
   font-family: var(--font-mono);
   font-size: var(--text-xs);
-  color: var(--leaf);
+  color: var(--fx-a);
 }
 
 @media (max-width: 880px) {
@@ -867,7 +940,7 @@
 
 /* Overview: setup steps --------------------------------------------------- */
 
-.setup-steps {
+.key-steps {
   list-style: none;
   margin: 0;
   padding: 0;
@@ -876,7 +949,7 @@
   counter-reset: none;
 }
 
-.setup-steps li {
+.key-steps li {
   display: grid;
   grid-template-columns: 44px 1fr;
   gap: 14px;
@@ -887,17 +960,17 @@
   border: 1px solid var(--border);
 }
 
-.setup-steps h3 {
+.key-steps h3 {
   font-size: var(--text-md);
   margin: 4px 0 4px;
 }
 
-.setup-steps p {
+.key-steps p {
   margin: 0;
   font-size: var(--text-sm);
 }
 
-.setup-n {
+.key-n {
   display: grid;
   place-items: center;
   width: 44px;
@@ -905,8 +978,8 @@
   border-radius: 50%;
   font-family: var(--font-display);
   font-weight: 600;
-  color: var(--on-primary);
-  background: linear-gradient(135deg, var(--leaf), var(--ocean));
+  color: var(--fx-on);
+  background: linear-gradient(135deg, var(--fx-a), var(--fx-b));
 }
 
 /* Overview: side bar demo ------------------------------------------------- */
@@ -988,7 +1061,7 @@
 }
 
 .sbd li:hover {
-  background: var(--mint);
+  background: var(--fx-soft);
   color: var(--ink);
 }
 
@@ -1199,7 +1272,7 @@
 
 .small-card.is-in:hover {
   transform: translateY(-4px);
-  border-color: var(--leaf);
+  border-color: var(--fx-a);
 }
 
 .small-card h3 {
@@ -1261,7 +1334,7 @@
 }
 
 .tree-art li:hover {
-  background: var(--mint);
+  background: var(--fx-soft);
 }
 
 .tree-art code {
@@ -1397,7 +1470,7 @@
 
 @keyframes path-flash {
   from {
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--leaf) 50%, transparent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--fx-a) 50%, transparent);
   }
 }
 
@@ -1449,7 +1522,7 @@
   font-family: var(--font-display);
   font-size: 4.2rem;
   font-weight: 700;
-  color: var(--mint);
+  color: var(--fx-soft);
   line-height: 1;
   z-index: 0;
 }
@@ -1534,7 +1607,7 @@
   border-radius: var(--radius);
   background: var(--surface);
   border: 1px solid var(--border);
-  border-top: 3px solid var(--leaf);
+  border-top: 3px solid var(--fx-a);
 }
 
 .note-card h3 {
@@ -1866,8 +1939,8 @@
 }
 
 .picker-an.is-on {
-  border-color: var(--leaf);
-  background: var(--mint);
+  border-color: var(--fx-a);
+  background: var(--fx-soft);
 }
 
 .picker-an.is-grey {
@@ -1919,14 +1992,14 @@
 }
 
 .proc:not(.is-off):hover {
-  border-color: var(--leaf);
+  border-color: var(--fx-a);
   transform: translateY(-2px);
 }
 
 .proc.is-picked {
-  border-color: var(--leaf);
-  background: var(--mint);
-  box-shadow: inset 0 0 0 1px var(--leaf);
+  border-color: var(--fx-a);
+  background: var(--fx-soft);
+  box-shadow: inset 0 0 0 1px var(--fx-a);
 }
 
 .proc.is-off {
@@ -1964,7 +2037,7 @@
   font-size: 11px;
   padding: 1px 8px;
   border-radius: 999px;
-  color: var(--ocean);
+  color: var(--fx-b);
   background: var(--info-bg);
   border: 1px solid var(--info-border);
 }
@@ -2034,7 +2107,7 @@
 .rl-progress span {
   display: block;
   height: 100%;
-  background: linear-gradient(90deg, var(--leaf), var(--ocean));
+  background: linear-gradient(90deg, var(--fx-a), var(--fx-b));
   animation: fill 1.2s var(--ease) both;
 }
 
@@ -2156,7 +2229,7 @@
   right: -18px;
   top: 8px;
   height: 2px;
-  background: linear-gradient(90deg, var(--leaf), var(--border));
+  background: linear-gradient(90deg, var(--fx-a), var(--border));
 }
 
 .save-step:last-child::before {
@@ -2171,7 +2244,7 @@
   height: 18px;
   border-radius: 50%;
   background: var(--surface);
-  border: 4px solid var(--leaf);
+  border: 4px solid var(--fx-a);
 }
 
 .save-step h3 {
@@ -2406,7 +2479,7 @@
 }
 
 .switch input:checked + .switch-track {
-  background: var(--leaf);
+  background: var(--fx-a);
 }
 
 .switch input:checked + .switch-track span {
@@ -2414,7 +2487,7 @@
 }
 
 .switch input:focus-visible + .switch-track {
-  outline: 2px solid var(--ocean);
+  outline: 2px solid var(--fx-b);
   outline-offset: 3px;
 }
 
@@ -2451,13 +2524,13 @@
 }
 
 .ai-packet {
-  fill: var(--ocean);
-  filter: drop-shadow(0 0 5px var(--ocean));
+  fill: var(--fx-b);
+  filter: drop-shadow(0 0 5px var(--fx-b));
 }
 
 .ai-packet-out {
-  fill: var(--leaf);
-  filter: drop-shadow(0 0 5px var(--leaf));
+  fill: var(--fx-a);
+  filter: drop-shadow(0 0 5px var(--fx-a));
 }
 
 .ai-in {
@@ -2476,7 +2549,7 @@
 }
 
 .ai-core circle {
-  filter: drop-shadow(0 8px 18px color-mix(in srgb, var(--leaf) 60%, transparent));
+  filter: drop-shadow(0 8px 18px color-mix(in srgb, var(--fx-a) 60%, transparent));
   animation: breathe 2.4s ease-in-out infinite;
   transform-origin: 252px 150px;
 }
@@ -2498,7 +2571,7 @@
 }
 
 .ai-doc-h {
-  fill: var(--leaf);
+  fill: var(--fx-a);
 }
 
 .ai-doc-l {
@@ -2555,7 +2628,7 @@
   font-size: var(--text-xs);
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: var(--leaf);
+  color: var(--fx-a);
 }
 
 .xp-group dl {
@@ -2669,7 +2742,7 @@
   height: 1em;
   margin-left: 2px;
   vertical-align: -2px;
-  background: var(--leaf);
+  background: var(--fx-a);
   animation: blink 0.5s infinite alternate;
 }
 
@@ -2720,7 +2793,7 @@
   content: counter(fb);
   font-family: var(--font-mono);
   font-size: var(--text-xs);
-  color: var(--leaf);
+  color: var(--fx-a);
 }
 
 .fallback li.is-warn {
@@ -2819,7 +2892,7 @@
 
 .fb-btn:hover {
   transform: translateY(-3px);
-  border-color: var(--leaf);
+  border-color: var(--fx-a);
 }
 
 .fb-btn:hover span {
@@ -3036,7 +3109,7 @@
 
 .assemble-n {
   font-family: var(--font-mono);
-  color: var(--leaf);
+  color: var(--fx-a);
 }
 
 @media (max-width: 880px) {
@@ -3091,8 +3164,8 @@
 }
 
 .rl li.is-on {
-  border-color: var(--leaf);
-  background: var(--mint);
+  border-color: var(--fx-a);
+  background: var(--fx-soft);
 }
 
 .rl-name {
@@ -3192,4 +3265,40 @@
 
 .new-strip-head h2 {
   margin: 10px 0 6px;
+}
+
+/* Features page: one long page of chapters --------------------------------- */
+
+.features-page [id] {
+  scroll-margin-top: 124px;
+}
+
+.features-page .doc-toc ul {
+  top: 132px;
+}
+
+.chapter {
+  border-top: 1px solid var(--border);
+}
+
+.chapter-title {
+  font-size: var(--text-hero);
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+  margin: 0 0 0.35em;
+}
+
+.new-section-title {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  margin: 0 0 0.4em;
+}
+
+.new-nav a.active {
+  background: var(--ink);
+  color: var(--page);
 }

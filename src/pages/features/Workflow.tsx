@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
 import { CountUp, Reveal } from "../../components/motion/motion";
-import { NEW_PAGES, NewHero, NextUp, SectionHead } from "../../components/newpages/NewLayout";
+import { Chapter, ChapterCards, SectionHead } from "../../components/newpages/NewLayout";
 import { SideIcon, type SideIconName } from "../../components/newpages/SideIcons";
 import { THEMES, useTheme } from "../../theme/ThemeProvider";
 
@@ -16,37 +15,37 @@ const FLOW = [
     icon: "folder",
     title: "Create a project",
     body: "Everything you do lives in a project folder: downloads, analysis results, AI explanations and PDF reports. Rename it or move it and everything follows.",
-    link: "/projects",
+    link: "#projects",
   },
   {
     icon: "down",
     title: "Download",
     body: "The parameter form says only what to download, and the GeoTIFF lands in the project's downloads folder. Save to… copies it anywhere else.",
-    link: "/projects#downloads",
+    link: "#project-downloads",
   },
   {
     icon: "chart",
     title: "Analyse",
     body: "Pick one of four analyses and its processes. Processes the dataset cannot run are folded away with the reason. It runs on an NVIDIA GPU when there is one.",
-    link: "/analysis",
+    link: "#analysis",
   },
   {
     icon: "eye",
     title: "Look at it",
     body: "The viewer shows true colour, false colour, NDVI, NDWI, land cover or any band, with the value under the pointer and the legend for the view.",
-    link: "/viewer",
+    link: "#viewer",
   },
   {
     icon: "spark",
     title: "Explain with AI",
     body: "Gemini is sent the result GeoTIFF, a preview of each layer and all the metadata, and writes an explanation that is kept in the project.",
-    link: "/ai-explanation",
+    link: "#ai-explanation",
   },
   {
     icon: "pdf",
     title: "Make a PDF report",
     body: "One click turns an explanation into an A4 PDF with the result's pictures, colour bars, headings and tables. Export it anywhere.",
-    link: "/reports",
+    link: "#reports",
   },
 ] as const;
 
@@ -113,8 +112,8 @@ function OrbitArt() {
       <svg viewBox="0 0 400 400" role="img" aria-label="The new workflow: keys, project, download, analyse, view, explain, report">
         <defs>
           <linearGradient id="orbit-grad" x1="0" x2="1" y1="0" y2="1">
-            <stop offset="0" stopColor="var(--leaf)" />
-            <stop offset="1" stopColor="var(--ocean)" />
+            <stop offset="0" stopColor="var(--fx-a)" />
+            <stop offset="1" stopColor="var(--fx-b)" />
           </linearGradient>
         </defs>
         <circle cx="200" cy="200" r="140" className="orbit-ring" />
@@ -205,7 +204,7 @@ function Workflow() {
             <span className="flow-n">{String(i + 1).padStart(2, "0")}</span>
             <h3>{s.title}</h3>
             <p>{s.body}</p>
-            {s.link.startsWith("#") ? <a href={s.link}>Read more</a> : <Link to={s.link}>Read more</Link>}
+            <a href={s.link}>Read more</a>
           </li>
         ))}
       </ol>
@@ -348,11 +347,12 @@ const SETUP = [
   },
 ];
 
-export default function WhatsNew() {
+export function WorkflowChapter() {
   return (
-    <div className="new-page">
-      <NewHero
-        eyebrow="What's new in the desktop app"
+    <>
+      <Chapter
+        id="workflow"
+        eyebrow="The whole workflow"
         title={
           <>
             From a download tool to a <span className="grad-text">full workflow</span>
@@ -387,27 +387,14 @@ export default function WhatsNew() {
             </dd>
           </div>
         </dl>
-      </NewHero>
+      </Chapter>
 
       <section className="section">
         <div className="container">
-          <SectionHead n="01" title="The new pages">
-            Each new part of the app has its own page here. Pick one, or keep scrolling for the whole story.
+          <SectionHead n="01" title="What is new in the app">
+            Each new part of the desktop app has its own chapter below. Jump to one, or keep scrolling for the whole story.
           </SectionHead>
-          <div className="feature-grid">
-            {NEW_PAGES.slice(1).map((p, i) => (
-              <Reveal key={p.to} delay={i * 90} variant="up">
-                <Link to={p.to} className="feature-card">
-                  <span className="feature-card-n">{String(i + 1).padStart(2, "0")}</span>
-                  <h3>{p.label}</h3>
-                  <p>{p.blurb}</p>
-                  <span className="feature-card-go" aria-hidden="true">
-                    →
-                  </span>
-                </Link>
-              </Reveal>
-            ))}
-          </div>
+          <ChapterCards />
         </div>
       </section>
 
@@ -435,10 +422,10 @@ export default function WhatsNew() {
               </p>
             </Reveal>
           </div>
-          <ol className="setup-steps">
+          <ol className="key-steps">
             {SETUP.map((s, i) => (
               <Reveal as="li" key={s.t} delay={i * 120} variant="right">
-                <span className="setup-n">{i + 1}</span>
+                <span className="key-n">{i + 1}</span>
                 <div>
                   <h3>{s.t}</h3>
                   <p>{s.d}</p>
@@ -484,7 +471,6 @@ export default function WhatsNew() {
         </div>
       </section>
 
-      <NextUp />
-    </div>
+    </>
   );
 }

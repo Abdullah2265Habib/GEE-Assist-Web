@@ -1,6 +1,6 @@
 import { useMemo, useState, type CSSProperties } from "react";
 import { Reveal, useScrollProgress } from "../../components/motion/motion";
-import { NewHero, NextUp, SectionHead } from "../../components/newpages/NewLayout";
+import { Chapter, SectionHead } from "../../components/newpages/NewLayout";
 import RasterViewer from "../../components/raster/RasterViewer";
 import { NDVI_RAMP, NDWI_RAMP, rampCss, render, viewUrl, type ViewKey } from "../../components/raster/scene";
 
@@ -83,11 +83,12 @@ function AnalysisColours() {
   );
 }
 
-export default function Viewer() {
+export function ViewerChapter() {
   return (
-    <div className="new-page">
-      <NewHero
-        eyebrow="New · GeoTIFF viewer"
+    <>
+      <Chapter
+        id="viewer"
+        eyebrow="GeoTIFF viewer"
         title={
           <>
             See what you downloaded, <span className="grad-text">pixel by pixel</span>
@@ -158,7 +159,6 @@ export default function Viewer() {
         </div>
       </section>
 
-      <NextUp />
-    </div>
+    </>
   );
 }

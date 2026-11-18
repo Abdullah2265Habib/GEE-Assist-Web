@@ -1,8 +1,15 @@
-import { lazy, Suspense } from "react";
-import { Link } from "react-router-dom";
+import { lazy, Suspense, useEffect } from "react";
+import { Link, useLocation } from "react-router-dom";
 import DownloadLab from "../components/downlab/DownloadLab";
 import EarthLoader from "../components/loader/EarthLoader";
-import { NewStrip } from "../components/newpages/NewLayout";
+import { FeatureNav } from "../components/newpages/NewLayout";
+import { ScrollProgress } from "../components/motion/motion";
+import { WorkflowChapter } from "./features/Workflow";
+import { ProjectsChapter } from "./features/Projects";
+import { AnalysisChapter } from "./features/Analysis";
+import { ViewerChapter } from "./features/Viewer";
+import { AiExplanationChapter } from "./features/AiExplanation";
+import { ReportsChapter } from "./features/Reports";
 
 const Terrain3D = lazy(() => import("../components/terrain/Terrain3D"));
 
@@ -32,12 +39,20 @@ const SECTIONS = [
   { id: "terminal", label: "The terminal" },
   { id: "accounts", label: "Accounts" },
   { id: "shortcuts", label: "Menus and shortcuts" },
-  { id: "new", label: "New in the app" },
 ];
 
 export default function Features() {
+  const { hash } = useLocation();
+  // The page loads lazily, so the router's own jump to #section can run before the section exists.
+  useEffect(() => {
+    if (!hash) return;
+    const t = window.setTimeout(() => document.getElementById(hash.slice(1))?.scrollIntoView(), 80);
+    return () => window.clearTimeout(t);
+  }, [hash]);
+
   return (
-    <>
+    <div className="features-page">
+      <ScrollProgress />
       <div className="container page-head features-hero">
         <div>
           <h1>
@@ -63,7 +78,9 @@ export default function Features() {
         </Suspense>
       </div>
 
-      <div className="container doc-layout">
+      <FeatureNav />
+
+      <div className="container doc-layout" id="basics">
         <nav className="doc-toc" aria-label="On this page">
           <ul>
             {SECTIONS.map((s) => (
@@ -211,10 +228,14 @@ export default function Features() {
         </div>
       </div>
 
-      <NewStrip
-        title="New since this page was written"
-        intro="The desktop app now keeps work in projects, analyses what you download, explains results with Gemini and writes PDF reports."
-      />
-    </>
+      <div className="new-page">
+        <WorkflowChapter />
+        <ProjectsChapter />
+        <AnalysisChapter />
+        <ViewerChapter />
+        <AiExplanationChapter />
+        <ReportsChapter />
+      </div>
+    </div>
   );
 }

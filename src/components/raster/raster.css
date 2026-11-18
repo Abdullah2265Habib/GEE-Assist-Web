@@ -28,14 +28,14 @@
 }
 
 .rv-tab:hover {
-  border-color: var(--leaf);
+  border-color: var(--fx-a);
   transform: translateY(-1px);
 }
 
 .rv-tab.is-on {
-  background: var(--leaf);
-  border-color: var(--leaf);
-  color: var(--on-primary);
+  background: var(--fx-a);
+  border-color: var(--fx-a);
+  color: var(--fx-on);
 }
 
 .rv-body {

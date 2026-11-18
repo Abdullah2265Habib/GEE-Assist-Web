@@ -1,7 +1,7 @@
 import { useState, type CSSProperties } from "react";
 import { Reveal } from "../../components/motion/motion";
 import { useScrollProgress } from "../../components/motion/motion";
-import { NewHero, NextUp, SectionHead } from "../../components/newpages/NewLayout";
+import { Chapter, SectionHead } from "../../components/newpages/NewLayout";
 import { NDVI_RAMP, rampCss, viewUrl } from "../../components/raster/scene";
 
 function Page1() {
@@ -184,11 +184,12 @@ function ReportsList() {
   );
 }
 
-export default function Reports() {
+export function ReportsChapter() {
   return (
-    <div className="new-page">
-      <NewHero
-        eyebrow="New · PDF reports"
+    <>
+      <Chapter
+        id="reports"
+        eyebrow="PDF reports"
         title={
           <>
             From explanation to <span className="grad-text">a report you can hand in</span>
@@ -248,7 +249,6 @@ export default function Reports() {
         </div>
       </section>
 
-      <NextUp />
-    </div>
+    </>
   );
 }

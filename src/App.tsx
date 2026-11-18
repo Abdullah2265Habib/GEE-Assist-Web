@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect } from "react";
-import { Route, Routes, useLocation } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import Header from "./components/layout/Header";
 import Footer from "./components/layout/Footer";
 import RequireAuth from "./auth/RequireAuth";
@@ -18,12 +18,6 @@ const Verify = lazy(() => import("./pages/auth/Verify"));
 const Account = lazy(() => import("./pages/Account"));
 const Admin = lazy(() => import("./pages/admin/Admin"));
 const NotFound = lazy(() => import("./pages/NotFound"));
-const WhatsNew = lazy(() => import("./pages/new/WhatsNew"));
-const Projects = lazy(() => import("./pages/new/Projects"));
-const AnalysisPage = lazy(() => import("./pages/new/Analysis"));
-const Viewer = lazy(() => import("./pages/new/Viewer"));
-const AiExplanation = lazy(() => import("./pages/new/AiExplanation"));
-const Reports = lazy(() => import("./pages/new/Reports"));
 
 const TITLES: Record<string, string> = {
   "/": "GEE-Assist: Earth Engine data in plain words",
@@ -38,12 +32,6 @@ const TITLES: Record<string, string> = {
   "/verify": "Check your email · GEE-Assist",
   "/account": "Your account · GEE-Assist",
   "/admin": "Admin · GEE-Assist",
-  "/whats-new": "What's new · GEE-Assist",
-  "/projects": "Projects · GEE-Assist",
-  "/analysis": "Analysis · GEE-Assist",
-  "/viewer": "GeoTIFF viewer · GEE-Assist",
-  "/ai-explanation": "AI explanation · GEE-Assist",
-  "/reports": "PDF reports · GEE-Assist",
 };
 
 function ScrollAndTitle() {
@@ -96,12 +84,13 @@ export default function App() {
                 </RequireAuth>
               }
             />
-            <Route path="/whats-new" element={<WhatsNew />} />
-            <Route path="/projects" element={<Projects />} />
-            <Route path="/analysis" element={<AnalysisPage />} />
-            <Route path="/viewer" element={<Viewer />} />
-            <Route path="/ai-explanation" element={<AiExplanation />} />
-            <Route path="/reports" element={<Reports />} />
+            {/* These were separate pages before they became chapters of /features. */}
+            <Route path="/whats-new" element={<Navigate to="/features#workflow" replace />} />
+            <Route path="/projects" element={<Navigate to="/features#projects" replace />} />
+            <Route path="/analysis" element={<Navigate to="/features#analysis" replace />} />
+            <Route path="/viewer" element={<Navigate to="/features#viewer" replace />} />
+            <Route path="/ai-explanation" element={<Navigate to="/features#ai-explanation" replace />} />
+            <Route path="/reports" element={<Navigate to="/features#reports" replace />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>

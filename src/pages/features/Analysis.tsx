@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { Reveal, prefersReducedMotion, useInView } from "../../components/motion/motion";
-import { NewHero, NextUp, SectionHead } from "../../components/newpages/NewLayout";
+import { Chapter, SectionHead } from "../../components/newpages/NewLayout";
 import { H, W, render } from "../../components/raster/scene";
 import {
   ANALYSIS_INFO,
@@ -337,11 +337,12 @@ function CheatSheet() {
   );
 }
 
-export default function Analysis() {
+export function AnalysisChapter() {
   return (
-    <div className="new-page">
-      <NewHero
-        eyebrow="New · Analysis"
+    <>
+      <Chapter
+        id="analysis"
+        eyebrow="Analysis"
         title={
           <>
             Four analyses, <span className="grad-text">79 indices and methods</span>
@@ -451,7 +452,6 @@ export default function Analysis() {
         </div>
       </section>
 
-      <NextUp />
-    </div>
+    </>
   );
 }

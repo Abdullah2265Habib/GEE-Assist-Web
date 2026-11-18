@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { Reveal, useInView } from "../../components/motion/motion";
-import { NewHero, NextUp, SectionHead } from "../../components/newpages/NewLayout";
+import { Chapter, SectionHead } from "../../components/newpages/NewLayout";
 
 const TREE: { depth: number; name: string; note: string; kind: "dir" | "file" }[] = [
   { depth: 0, name: "Lahore heat 2024/", note: "the project", kind: "dir" },
@@ -198,11 +198,12 @@ function DashboardMock() {
   );
 }
 
-export default function Projects() {
+export function ProjectsChapter() {
   return (
-    <div className="new-page">
-      <NewHero
-        eyebrow="New · Projects"
+    <>
+      <Chapter
+        id="projects"
+        eyebrow="Projects"
         title={
           <>
             Your work, kept <span className="grad-text">in one folder</span>
@@ -264,7 +265,7 @@ export default function Projects() {
         </div>
       </section>
 
-      <section className="section band-soft" id="downloads">
+      <section className="section band-soft" id="project-downloads">
         <div className="container">
           <SectionHead n="04" title="Downloads go into the project">
             A download needs an open project; starting one without it asks you to create or open one first. The form's
@@ -313,7 +314,6 @@ export default function Projects() {
         </div>
       </section>
 
-      <NextUp />
-    </div>
+    </>
   );
 }

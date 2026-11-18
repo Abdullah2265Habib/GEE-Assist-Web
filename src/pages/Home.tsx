@@ -3,7 +3,10 @@ import { Link } from "react-router-dom";
 import type { SelectedArea } from "../components/globe/Globe";
 import CopyButton from "../components/CopyButton";
 import EarthLoader from "../components/loader/EarthLoader";
-import { ANALYSES, DATASETS, DATASET_CATEGORIES } from "../data/datasets";
+import { DATASETS, DATASET_CATEGORIES } from "../data/datasets";
+import { ANALYSIS_INFO } from "../data/analyses";
+
+const FORMULAS_IN_APP = 79;
 import { THEMES, useTheme } from "../theme/ThemeProvider";
 import { DOWNLOAD_URL } from "../config";
 import { NewStrip } from "../components/newpages/NewLayout";
@@ -54,11 +57,23 @@ const STEPS = [
   },
   {
     title: "Check the parameter form",
-    body: "Dataset, bands, pixel size, cloud cover, composite, dates, area, projection and analysis are all on one form. Each value is checked against what the chosen dataset supports, so you cannot ask Landsat 5 for 2020 or Sentinel-1 for NDVI.",
+    body: "Dataset, bands, pixel size, cloud cover, composite, dates, area and projection are all on one form. Each value is checked against what the chosen dataset supports, so you cannot ask Landsat 5 for 2020. The form only says what to download; analyses come afterwards.",
   },
   {
     title: "Download the GeoTIFF",
-    body: "The request is split into 500 MB chunks and fetched as small requests, eight at a time, well under Earth Engine's 48 MB limit. Chunks are merged as they arrive. Pause, close the app, and pick up where it stopped.",
+    body: "The request is split into 500 MB chunks and fetched as small requests, eight at a time, well under Earth Engine's 48 MB limit. Chunks are merged as they arrive, into the open project's downloads folder. Pause, close the app, and pick up where it stopped.",
+  },
+  {
+    title: "Analyse it",
+    body: "Choose water, vegetation, land surface temperature or land cover, and the processes the dataset can run. It runs on your NVIDIA GPU when there is one, otherwise on the CPU, and the result is saved only when you ask.",
+  },
+  {
+    title: "Ask Gemini to explain it",
+    body: "Gemini is sent the result GeoTIFF, a picture of every layer and all the metadata, and explains the result in plain words. The explanation is kept in the project.",
+  },
+  {
+    title: "Hand in a PDF report",
+    body: "One click turns an explanation into an A4 PDF with the result's pictures, colour bars, headings and tables. Export a copy anywhere.",
   },
 ];
 
@@ -101,7 +116,8 @@ export default function Home() {
             <h1>Satellite data, asked for in plain words.</h1>
             <p className="lede">
               GEE-Assist is a Windows app for Google Earth Engine. Describe the imagery you need, check the form it fills
-              in, and get a GeoTIFF on your disk. No code editor and no scripts.
+              in, and get a GeoTIFF on your disk. Then analyse it on your own computer, ask Gemini what it shows and turn
+              the answer into a PDF report. No code editor and no scripts.
             </p>
             <div className="btn-row">
               <a className="btn btn-primary btn-lg" href={DOWNLOAD_URL}>
@@ -154,8 +170,11 @@ export default function Home() {
       <section className="section">
         <div className="container">
           <div className="section-intro">
-            <h2>From a sentence to a GeoTIFF</h2>
-            <p className="lede">Every request goes through the same three steps, whether you type, click or use the terminal.</p>
+            <h2>From a sentence to a report</h2>
+            <p className="lede">
+              Every request goes through the same steps, whether you type, click or use the terminal, and everything it
+              makes is kept in one project folder.
+            </p>
           </div>
           <ol className="steps">
             {STEPS.map((s) => (
@@ -223,23 +242,29 @@ export default function Home() {
       <section className="section">
         <div className="container">
           <div className="section-intro">
-            <h2>Analyses that run before the download</h2>
-            <p className="lede">Add an analysis to a request and the index is computed in Earth Engine, so you download the result, not the raw bands.</p>
+            <h2>Four analyses, on your own computer</h2>
+            <p className="lede">
+              Open a finished download or any GeoTIFF, pick an analysis and its processes. {FORMULAS_IN_APP} indices and
+              methods, and only those your dataset's bands can compute are offered.
+            </p>
           </div>
           <dl className="analyses">
-            {Object.entries(ANALYSES).map(([key, a]) => (
-              <div key={key}>
+            {ANALYSIS_INFO.map((a) => (
+              <div key={a.key}>
                 <dt>{a.label}</dt>
                 <dd>
-                  {a.processes.map((p) => (
-                    <span key={p} className="pill">
-                      {p}
+                  {a.subtypes.map((sub) => (
+                    <span key={sub} className="pill">
+                      {sub}
                     </span>
                   ))}
                 </dd>
               </div>
             ))}
           </dl>
+          <p className="more-link">
+            <Link to="/features#analysis">See every process and try the picker</Link>
+          </p>
         </div>
       </section>
 
@@ -258,8 +283,8 @@ export default function Home() {
       </section>
 
       <NewStrip
-        title="New in the desktop app"
-        intro="Projects, four analyses, a GeoTIFF viewer, AI explanations from Gemini and PDF reports."
+        title="Everything the app does now"
+        intro="Projects, four analyses, a GeoTIFF viewer, AI explanations from Gemini and PDF reports. Each has its own chapter on the Features page."
       />
 
       <section className="section cta">

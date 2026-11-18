@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { Reveal, useInView, useTypewriter } from "../../components/motion/motion";
-import { NewHero, NextUp, SectionHead } from "../../components/newpages/NewLayout";
+import { Chapter, SectionHead } from "../../components/newpages/NewLayout";
 import { viewUrl } from "../../components/raster/scene";
 
 /** Hero picture: the three inputs flowing into Gemini, and an explanation coming out. */
@@ -16,8 +16,8 @@ function FlowArt() {
       <svg viewBox="0 0 420 300" role="img" aria-label="The GeoTIFF, previews and metadata go to Gemini, which returns an explanation">
         <defs>
           <linearGradient id="ai-grad" x1="0" x2="1">
-            <stop offset="0" stopColor="var(--ocean)" />
-            <stop offset="1" stopColor="var(--leaf)" />
+            <stop offset="0" stopColor="var(--fx-b)" />
+            <stop offset="1" stopColor="var(--fx-a)" />
           </linearGradient>
         </defs>
         {inputs.map((p, i) => {
@@ -46,7 +46,7 @@ function FlowArt() {
           <path
             className="ai-star"
             d="M252 130l5 13 13 5-13 5-5 13-5-13-13-5 13-5z"
-            fill="var(--on-primary)"
+            fill="var(--fx-on)"
           />
         </g>
         <g className="ai-doc">
@@ -235,11 +235,12 @@ function FeedbackMock() {
   );
 }
 
-export default function AiExplanation() {
+export function AiExplanationChapter() {
   return (
-    <div className="new-page">
-      <NewHero
-        eyebrow="New · AI explanation"
+    <>
+      <Chapter
+        id="ai-explanation"
+        eyebrow="AI explanation"
         title={
           <>
             Ask Gemini <span className="grad-text">what the result means</span>
@@ -320,7 +321,7 @@ export default function AiExplanation() {
                 <code>explanation/Sentinel-2_…_Vegetation_NDVI_EVI_…_explanation_2.md</code>
               </li>
               <li className="file-list-next">
-                → <Link to="/reports">turn one into a PDF report</Link>
+                → <a href="#reports">turn one into a PDF report</a>
               </li>
             </ul>
           </Reveal>
@@ -344,7 +345,6 @@ export default function AiExplanation() {
         </div>
       </section>
 
-      <NextUp />
-    </div>
+    </>
   );
 }

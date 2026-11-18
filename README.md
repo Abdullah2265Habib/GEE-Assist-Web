@@ -11,8 +11,8 @@ React + TypeScript, built with Vite. Accounts, ratings, feedback and suggestions
 
 | Path | Who | What |
 |---|---|---|
-| `/` | everyone | Interactive globe, how a request works, live terminal demo, datasets, analyses, themes |
-| `/features` | everyone | Plain-language requests, the parameter form, chunked downloads, terminal, accounts, shortcuts |
+| `/` | everyone | Interactive globe, the six steps from request to PDF report, live terminal demo, datasets, the four analyses, themes, links to each feature chapter |
+| `/features` | everyone | One long page: the basics (requests, form, downloads, terminal, accounts, shortcuts), then a chapter each for the workflow, projects, analysis, the GeoTIFF viewer, AI explanation and PDF reports. `/whats-new`, `/projects`, `/analysis`, `/viewer`, `/ai-explanation` and `/reports` redirect to those chapters |
 | `/datasets` | everyone | All 15 datasets: years covered (chart), pixel size, analyses, Earth Engine IDs, filters |
 | `/terminal` | everyone | gkonsol running in the browser (simulated, downloads nothing) and a command reference |
 | `/about` | everyone | The problem, what was built, how the pieces fit, tech stack, licence, privacy |
