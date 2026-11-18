@@ -2420,13 +2420,7 @@
 }
 
 .peel.is-open .peel-layer.is-hot:not(.is-front) .peel-visual {
-  transform: translateX(-22px) scale(1.04);
-}
-
-@media (max-width: 720px) {
-  .peel.is-open .peel-layer.is-hot:not(.is-front) .peel-visual {
-    transform: translateY(-8px);
-  }
+  transform: translateY(-8px);
 }
 
 .peel-img {
