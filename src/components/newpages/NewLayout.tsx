@@ -7,16 +7,6 @@ export const FEATURE_CHAPTERS = [
   { id: "basics", label: "The basics", blurb: "Plain-language requests, the parameter form, large downloads, the terminal and accounts." },
   { id: "workflow", label: "Workflow", blurb: "One request from the first sign-in to a PDF report, step by step." },
   {
-    id: "projects",
-    label: "Projects",
-    blurb: "Work inside a project folder: downloads, results, explanations and reports kept together.",
-  },
-  {
-    id: "analysis",
-    label: "Analysis",
-    blurb: "Four analyses, 79 indices and methods, run on your GPU or CPU, saved only when you ask.",
-  },
-  {
     id: "viewer",
     label: "GeoTIFF viewer",
     blurb: "True colour, false colour, NDVI, NDWI and land cover, with the value under your pointer.",

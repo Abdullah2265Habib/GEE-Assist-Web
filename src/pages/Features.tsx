@@ -5,8 +5,6 @@ import EarthLoader from "../components/loader/EarthLoader";
 import { FeatureNav } from "../components/newpages/NewLayout";
 import { ScrollProgress } from "../components/motion/motion";
 import { WorkflowChapter } from "./features/Workflow";
-import { ProjectsChapter } from "./features/Projects";
-import { AnalysisChapter } from "./features/Analysis";
 import { ViewerChapter } from "./features/Viewer";
 import { AiExplanationChapter } from "./features/AiExplanation";
 import { ReportsChapter } from "./features/Reports";
@@ -230,8 +228,6 @@ export default function Features() {
 
       <div className="new-page">
         <WorkflowChapter />
-        <ProjectsChapter />
-        <AnalysisChapter />
         <ViewerChapter />
         <AiExplanationChapter />
         <ReportsChapter />

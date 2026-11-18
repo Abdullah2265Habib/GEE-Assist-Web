@@ -86,8 +86,8 @@ export default function App() {
             />
             {/* These were separate pages before they became chapters of /features. */}
             <Route path="/whats-new" element={<Navigate to="/features#workflow" replace />} />
-            <Route path="/projects" element={<Navigate to="/features#projects" replace />} />
-            <Route path="/analysis" element={<Navigate to="/features#analysis" replace />} />
+            <Route path="/projects" element={<Navigate to="/features" replace />} />
+            <Route path="/analysis" element={<Navigate to="/features" replace />} />
             <Route path="/viewer" element={<Navigate to="/features#viewer" replace />} />
             <Route path="/ai-explanation" element={<Navigate to="/features#ai-explanation" replace />} />
             <Route path="/reports" element={<Navigate to="/features#reports" replace />} />

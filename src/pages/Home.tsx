@@ -262,9 +262,6 @@ export default function Home() {
               </div>
             ))}
           </dl>
-          <p className="more-link">
-            <Link to="/features#analysis">See every process and try the picker</Link>
-          </p>
         </div>
       </section>
 
@@ -284,7 +281,7 @@ export default function Home() {
 
       <NewStrip
         title="Everything the app does now"
-        intro="Projects, four analyses, a GeoTIFF viewer, AI explanations from Gemini and PDF reports. Each has its own chapter on the Features page."
+        intro="A GeoTIFF viewer, AI explanations from Gemini and PDF reports. Each has its own chapter on the Features page."
       />
 
       <section className="section cta">

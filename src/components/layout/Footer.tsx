@@ -38,12 +38,6 @@ export default function Footer() {
               <Link to="/features#workflow">Workflow</Link>
             </li>
             <li>
-              <Link to="/features#projects">Projects</Link>
-            </li>
-            <li>
-              <Link to="/features#analysis">Analysis</Link>
-            </li>
-            <li>
               <Link to="/features#viewer">GeoTIFF viewer</Link>
             </li>
             <li>
