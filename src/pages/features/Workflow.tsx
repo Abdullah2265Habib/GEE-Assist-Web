@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CountUp } from "../../components/motion/motion";
 import { Chapter } from "../../components/newpages/NewLayout";
 
@@ -114,9 +114,52 @@ function OrbitArt() {
   });
   const [hot, setHot] = useState<number | null>(null);
   const cur = hot === null ? null : FLOW[hot];
+  const svgRef = useRef<SVGSVGElement>(null);
+  const dotRef = useRef<SVGCircleElement>(null);
+
+  // The dot rides the ring to the point nearest the cursor, easing round the shorter way.
+  useEffect(() => {
+    const svg = svgRef.current;
+    const dot = dotRef.current;
+    if (!svg || !dot) return;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let angle = -Math.PI / 2;
+    let target = angle;
+    let raf = 0;
+    const draw = () => {
+      dot.setAttribute("cx", String(200 + Math.cos(angle) * 140));
+      dot.setAttribute("cy", String(200 + Math.sin(angle) * 140));
+    };
+    const step = () => {
+      const diff = Math.atan2(Math.sin(target - angle), Math.cos(target - angle));
+      angle += diff * 0.18;
+      draw();
+      raf = Math.abs(diff) > 0.002 ? requestAnimationFrame(step) : 0;
+    };
+    const onMove = (e: PointerEvent) => {
+      const r = svg.getBoundingClientRect();
+      const dx = e.clientX - (r.left + r.width / 2);
+      const dy = e.clientY - (r.top + r.height / 2);
+      if (dx === 0 && dy === 0) return;
+      target = Math.atan2(dy, dx);
+      if (reduce) {
+        angle = target;
+        draw();
+      } else if (!raf) {
+        raf = requestAnimationFrame(step);
+      }
+    };
+    draw();
+    window.addEventListener("pointermove", onMove, { passive: true });
+    return () => {
+      window.removeEventListener("pointermove", onMove);
+      cancelAnimationFrame(raf);
+    };
+  }, []);
+
   return (
     <div className="orbit-art">
-      <svg viewBox="0 0 400 400" role="group" aria-label="The workflow: keys, projects, download, analysis, viewer, AI explanation, PDF reports">
+      <svg ref={svgRef} viewBox="0 0 400 400" role="group" aria-label="The workflow: keys, projects, download, analysis, viewer, AI explanation, PDF reports">
         <defs>
           <linearGradient id="orbit-grad" x1="0" x2="1" y1="0" y2="1">
             <stop offset="0" stopColor="var(--fx-a)" />
@@ -148,9 +191,7 @@ function OrbitArt() {
             </text>
           </g>
         )}
-        <circle r="6" className="orbit-pulse">
-          <animateMotion dur="9s" repeatCount="indefinite" path="M200,60 a140,140 0 1,1 -0.01,0" />
-        </circle>
+        <circle ref={dotRef} r="6" className="orbit-pulse" />
         {nodes.map((n, i) => (
           <g
             key={n.title}
