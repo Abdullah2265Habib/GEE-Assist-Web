@@ -1,17 +1,5 @@
 import { Link } from "react-router-dom";
-import CopyButton from "../components/CopyButton";
-import { APP_VERSION, BACKEND_GITHUB_URL, DOWNLOAD_URL, GITHUB_URL } from "../config";
-
-function Cmd({ children }: { children: string }) {
-  return (
-    <div className="cmd-block">
-      <pre>
-        <code>{children}</code>
-      </pre>
-      <CopyButton text={children} />
-    </div>
-  );
-}
+import { APP_VERSION, DOWNLOAD_URL, GITHUB_URL } from "../config";
 
 const FAQ: [string, string][] = [
   [
@@ -20,7 +8,7 @@ const FAQ: [string, string][] = [
   ],
   [
     "Do I need to know JavaScript or Python?",
-    "No. You describe the data or fill in a form. Python is only needed to run the app from source until the installer is published.",
+    "No. You describe the data or fill in a form.",
   ],
   [
     "Does it run on macOS or Linux?",
@@ -74,44 +62,10 @@ export default function Download() {
           <h2>What you need</h2>
           <ul className="check-list">
             <li>Windows 10 or 11, 64-bit</li>
-            <li>Python 3.10 or newer, to run from source</li>
             <li>A Google account, and a Google Cloud project registered for Earth Engine</li>
             <li>Optional: a Gemini API key for plain-language requests</li>
             <li>Free disk space for your downloads. A year of Sentinel-2 over a city is usually tens to hundreds of megabytes</li>
           </ul>
-        </section>
-
-        <section>
-          <h2>Run it from source</h2>
-          <ol className="setup-steps">
-            <li>
-              <h3>Start the account server</h3>
-              <p>
-                Sign-in goes through the{" "}
-                <a href={BACKEND_GITHUB_URL} target="_blank" rel="noreferrer">
-                  GEE-Assist account server
-                </a>
-                . Skip this if your organisation already runs one, and put its address in <code>AUTH_API_URL</code>.
-              </p>
-              <Cmd>{`cd GEE-Assist-Backend\n.venv\\Scripts\\activate\nuvicorn app.main:app`}</Cmd>
-            </li>
-            <li>
-              <h3>Install the app</h3>
-              <Cmd>{`git clone ${GITHUB_URL}.git\ncd GEE-Assist\npython -m venv .venv\n.venv\\Scripts\\activate\npip install -r requirements.txt\ncopy .env.example .env`}</Cmd>
-            </li>
-            <li>
-              <h3>Fill in .env</h3>
-              <p>
-                Set <code>GEE_PROJECT</code> to your Cloud project ID and, for Gemini, <code>GEMINI_API_KEY</code>. Change{" "}
-                <code>AUTH_API_URL</code> if the server is not on <code>localhost:8000</code>.
-              </p>
-            </li>
-            <li>
-              <h3>Start GEE-Assist</h3>
-              <Cmd>python main.py</Cmd>
-              <p>Choose a theme, then sign in or create an account.</p>
-            </li>
-          </ol>
         </section>
 
         <section>
