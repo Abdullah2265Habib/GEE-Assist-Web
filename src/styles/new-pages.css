@@ -135,26 +135,6 @@
   pointer-events: none;
 }
 
-.new-badge {
-  flex: none;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  padding: 3px 9px;
-  border-radius: 999px;
-  color: var(--fx-on);
-  background: linear-gradient(120deg, var(--fx-a), var(--fx-b));
-  animation: badge-shine 3s ease-in-out infinite;
-  background-size: 200% 100%;
-}
-
-@keyframes badge-shine {
-  50% {
-    background-position: 100% 0;
-  }
-}
-
 /* Hero -------------------------------------------------------------------- */
 
 .new-hero {

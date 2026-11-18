@@ -110,7 +110,6 @@ export function NewStrip({ title, intro }: { title: string; intro: string }) {
       <div className="container">
         <Reveal className="new-strip-head">
           <div>
-            <span className="new-badge">New</span>
             <h2>{title}</h2>
             <p className="lede">{intro}</p>
           </div>

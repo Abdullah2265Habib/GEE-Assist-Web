@@ -7,7 +7,6 @@ import { DATASETS, DATASET_CATEGORIES } from "../data/datasets";
 import { ANALYSIS_INFO } from "../data/analyses";
 
 const FORMULAS_IN_APP = 79;
-import { THEMES, useTheme } from "../theme/ThemeProvider";
 import { DOWNLOAD_URL } from "../config";
 import { NewStrip } from "../components/newpages/NewLayout";
 
@@ -78,31 +77,6 @@ const STEPS = [
 ];
 
 const DEMO = ["ask NDVI of Lahore for summer 2024 from Sentinel-2", "form estimate", "form submit", "download start"];
-
-function ThemePicker() {
-  const { theme, setTheme } = useTheme();
-  return (
-    <div className="theme-picker" role="radiogroup" aria-label="Choose a theme">
-      {THEMES.map((t) => (
-        <button
-          key={t.name}
-          type="button"
-          role="radio"
-          aria-checked={theme === t.name}
-          className="theme-card"
-          onClick={() => setTheme(t.name)}
-        >
-          {t.inApp ? (
-            <img src={t.icon.replace("-64", "-256")} alt="" width={96} height={96} />
-          ) : (
-            <span className={`theme-card-disc swatch-${t.name}`} aria-hidden="true" />
-          )}
-          <span>{t.label}</span>
-        </button>
-      ))}
-    </div>
-  );
-}
 
 export default function Home() {
   const [area, setArea] = useState<SelectedArea | null>(null);
@@ -262,20 +236,6 @@ export default function Home() {
               </div>
             ))}
           </dl>
-        </div>
-      </section>
-
-      <section className="section">
-        <div className="container split">
-          <div>
-            <h2>Pick a theme</h2>
-            <p>
-              On first start GEE-Assist asks for a theme: light, dark blue-green or dark grey. Each has its own icon for the
-              window and taskbar. This website has those three plus three of its own: ocean, forest and sand; navy and
-              sand; and aurora, a polar-night palette. Pick one here and the site switches with it.
-            </p>
-          </div>
-          <ThemePicker />
         </div>
       </section>
 
