@@ -9,7 +9,7 @@
   --st-ocean: #6cb8f0;
   --st-line: rgb(234 247 243 / 0.14);
   position: relative;
-  height: 1500vh;
+  height: 2200vh;
   background: var(--st-bg);
   color: var(--st-text);
 }
@@ -622,4 +622,193 @@
   font-family: var(--font-mono);
   font-size: 17px;
   font-weight: 500;
+}
+
+/* ---- 7 · AI explanation --------------------------------------------- */
+
+.st-ai-wire {
+  stroke: rgb(94 211 168 / 0.3);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 7;
+  fill: none;
+}
+
+.st-ai-packet {
+  fill: var(--st-leaf);
+  filter: drop-shadow(0 0 3px rgb(94 211 168 / 0.6));
+}
+
+.st-ai-ring {
+  fill: none;
+  stroke: var(--st-leaf);
+  stroke-width: 1.5;
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+}
+
+.st-ai-core {
+  fill: url(#st-ai-core-grad);
+  stroke: rgb(126 240 198 / 0.7);
+  stroke-width: 2;
+  filter: drop-shadow(0 0 18px rgb(46 168 136 / 0.55));
+}
+
+.st-ai-spark {
+  fill: #eafff7;
+  opacity: 0.95;
+}
+
+.st-ai-spark-sm {
+  fill: #cafbe9;
+  opacity: 0.8;
+}
+
+.st-ai-core-label {
+  fill: var(--st-ink);
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.st-ai-core-sub {
+  fill: var(--st-muted);
+  font-family: var(--font-mono);
+  font-size: 15px;
+}
+
+.st-ai-panel-title {
+  fill: var(--st-leaf);
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 600;
+}
+
+.st-ai-rule {
+  stroke: var(--st-line);
+  stroke-width: 1.5;
+}
+
+.st-ai-line {
+  fill: var(--st-text);
+  font-family: var(--font-body);
+  font-size: 23px;
+}
+
+/* The core pulses while it "thinks"; the story does not drive this. */
+@media (prefers-reduced-motion: no-preference) {
+  .st-ai-ring-1 {
+    animation: st-ai-pulse 2.4s ease-out infinite;
+  }
+
+  .st-ai-ring-2 {
+    animation: st-ai-pulse 2.4s ease-out 0.8s infinite;
+  }
+
+  .st-ai-spark {
+    animation: st-ai-breathe 2.4s ease-in-out infinite;
+    transform-box: fill-box;
+    transform-origin: 50% 50%;
+  }
+}
+
+@keyframes st-ai-pulse {
+  0% {
+    opacity: 0.5;
+    transform: scale(0.8);
+  }
+  70% {
+    opacity: 0;
+    transform: scale(1.25);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.25);
+  }
+}
+
+@keyframes st-ai-breathe {
+  0%,
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+  50% {
+    transform: scale(1.12) rotate(18deg);
+  }
+}
+
+/* ---- 8 · PDF report ------------------------------------------------- */
+
+.st-report-shadow {
+  fill: rgb(0 0 0 / 0.45);
+}
+
+.st-report-paper {
+  fill: #f6f8f7;
+  stroke: rgb(0 0 0 / 0.1);
+  stroke-width: 1;
+}
+
+.st-report-accent {
+  fill: var(--st-leaf);
+}
+
+.st-report-title {
+  fill: #10231f;
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 700;
+}
+
+.st-report-sub {
+  fill: #4a635d;
+  font-family: var(--font-body);
+  font-size: 15px;
+}
+
+.st-report-h2 {
+  fill: #18352f;
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.st-report-hr {
+  stroke: rgb(16 35 31 / 0.14);
+  stroke-width: 1;
+}
+
+.st-report-thumb-frame {
+  fill: none;
+  stroke: rgb(16 35 31 / 0.2);
+  stroke-width: 1.5;
+}
+
+.st-report-small {
+  fill: #4a635d;
+  font-family: var(--font-mono);
+  font-size: 14px;
+}
+
+.st-report-stat-k {
+  fill: #35504a;
+  font-family: var(--font-body);
+  font-size: 16px;
+}
+
+.st-report-stat-v {
+  fill: #10231f;
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.st-report-line {
+  fill: rgb(16 35 31 / 0.14);
+}
+
+.st-report-foot {
+  fill: #6a827c;
+  font-family: var(--font-mono);
+  font-size: 14px;
 }

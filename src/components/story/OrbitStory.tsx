@@ -35,6 +35,14 @@ const CHAPTERS = [
     title: "Turned into answers",
     body: "Add an analysis and the index is computed before the download: NDVI here, or water, temperature and land cover. The result is a GeoTIFF that opens in QGIS or ArcGIS.",
   },
+  {
+    title: "Explained by AI",
+    body: "GEE-Assist hands Gemini the result, a picture of every layer and all the metadata — dataset, area and the NDVI analysis. It reads them and writes back what the scene shows, in plain words.",
+  },
+  {
+    title: "Written up as a report",
+    body: "The NDVI analysis and Gemini's explanation are laid out as an A4 PDF: the map, its colour bar, the headline numbers and the write-up. One click saves it into the project.",
+  },
 ];
 
 /* ------------------------------------------------------------- geometry */
@@ -57,7 +65,7 @@ const FRAME = { x: 480, y: 230, size: 360 };
 const AOI = { x: 600, y: 300, size: 400 };
 const LENS = { cx: 600, cy: 450, r: 290 };
 const STRIP_SCALE = 4;
-const TOTAL = 6500;
+const TOTAL = 9700;
 const HOLD = 350;
 const BINARY_ROWS = 13;
 /** Where the split bands land: a column to the right of the picture. */
@@ -65,6 +73,38 @@ const BAND_X = 380;
 const BAND_SIZE = 150;
 /** The rounded "screen" the decoder and the map are shown on. */
 const SCREEN = { x: 24, y: 24, w: W - 48, h: H - 48, r: 32 };
+
+/* ----- 7 · AI explanation scene ----- */
+const AI_CORE = { x: 582, y: 452, r: 56 };
+const AI_CARD = { x: 64, w: 320, h: 150 };
+const AI_CARD_Y = [168, 354, 540];
+/** Each input card feeds packets into the core; dx is shared, dy differs per card. */
+const AI_FEED = AI_CARD_Y.map((y) => {
+  const cy = y + AI_CARD.h / 2;
+  return { sx: AI_CARD.x + AI_CARD.w, sy: cy, dx: AI_CORE.x - AI_CORE.r - (AI_CARD.x + AI_CARD.w), dy: AI_CORE.y - cy };
+});
+const AI_PANEL_X = 742;
+const AI_LINES = [
+  "Healthy summer cropland fills",
+  "most of the scene. Mean NDVI 0.52.",
+  "68% of pixels pass 0.4 — vigorous",
+  "growth, densest beside the river.",
+  "The river reads negative: open water.",
+  "The town east of it stays low and",
+  "built-up, around 0.1.",
+];
+
+/* ----- 8 · PDF report scene ----- */
+const PAGE = { x: 330, y: 66, w: 540, h: 768 };
+const PAGE_PAD = 38;
+/** A five-point tie between the report's content and the NDVI legend colours. */
+const REPORT_STATS: [string, string][] = [
+  ["Mean NDVI", "0.52"],
+  ["Vegetation", "68%"],
+  ["Bare soil", "19%"],
+  ["Water", "9%"],
+  ["Built-up", "4%"],
+];
 
 function orbitPoint(t: number): [number, number] {
   const lx = ORBIT.rx * Math.cos(t);
@@ -97,17 +137,19 @@ const bits = (n: number) => n.toString(2).padStart(8, "0");
 const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
 
 /** Timeline time (ms) at which each chapter's scene begins; captions follow these. */
-const CHAPTER_STARTS = [0, 1000, 2650, 3200, 3950, 5400];
+const CHAPTER_STARTS = [0, 1000, 2650, 3200, 3950, 5400, 6900, 8550];
 
 /** Timeline time (ms) during which each scene layer may be visible: [selector, from, to]. */
 const SCENE_WINDOWS: [string, number, number][] = [
   [".st-world", 0, 2450],
   [".st-lens", 1840, 3250],
   [".st-ground", 2800, 4450],
-  [".st-decoder", 4150, Infinity],
+  [".st-decoder", 4150, 7200],
   [".st-band", 4780, 5850],
-  [".st-map", 5900, Infinity],
-  [".st-map-late-layer", 5900, Infinity],
+  [".st-map", 5900, 7250],
+  [".st-map-late-layer", 5900, 7250],
+  [".st-ai", 6850, 8780],
+  [".st-report", 8440, Infinity],
 ];
 const chapterAt = (t: number) => {
   let c = 0;
@@ -289,7 +331,16 @@ export default function OrbitStory() {
         .set($(".st-ndvi"), { opacity: 0 }, 0)
         .set($(".st-formula"), { opacity: 0 }, 0)
         .set($(".st-map"), { opacity: 0 }, 0)
-        .set($$(".st-map-late"), { opacity: 0 }, 0);
+        .set($$(".st-map-late"), { opacity: 0 }, 0)
+        .set($(".st-ai"), { opacity: 0 }, 0)
+        .set($$(".st-ai-card"), { opacity: 0, translateX: -24 }, 0)
+        .set($$(".st-ai-packet"), { opacity: 0, translateX: 0, translateY: 0 }, 0)
+        .set($$(".st-ai-line"), { opacity: 0 }, 0)
+        .set($(".st-ai-core-g"), { opacity: 0, scale: 0.6 }, 0)
+        .set($(".st-report"), { opacity: 0 }, 0)
+        .set($(".st-report-page"), { opacity: 0, scale: 0.92 }, 0)
+        .set($$(".st-report-el"), { opacity: 0, translateY: 12 }, 0)
+        .set($(".st-report-saved"), { opacity: 0, translateY: 14 }, 0);
 
       /* 1 · In orbit */
       tl.add($(".st-sat-orbit"), { translateX: motion.translateX, translateY: motion.translateY, duration: 1050, ease: "inOutSine" }, 0)
@@ -369,6 +420,27 @@ export default function OrbitStory() {
           ease: "inOutCubic",
         }, 6000)
         .add($$(".st-map-late"), { opacity: [0, 1], translateY: [10, 0], duration: 250, delay: stagger(60) }, 6300)
+
+        /* 7 · Explained by AI: the map and result dissolve, the metadata, area and NDVI
+           analysis stack up as cards, stream into Gemini, which thinks and writes an
+           explanation line by line. */
+        .add($$(".st-map, .st-decoder"), { opacity: [1, 0], duration: 220, ease: "inQuad" }, 6900)
+        .add($$(".st-map-late"), { opacity: [1, 0], duration: 180, ease: "inQuad" }, 6900)
+        .add($(".st-ai"), { opacity: [0, 1], duration: 200 }, 6960)
+        .add($(".st-ai-core-g"), { opacity: [0, 1], scale: [0.6, 1], duration: 300, ease: "outBack" }, 7020)
+        .add($$(".st-ai-card"), { opacity: [0, 1], translateX: [-24, 0], duration: 260, delay: stagger(110), ease: "outQuad" }, 7120)
+        .add($$(".st-ai-feed-0 .st-ai-packet"), { translateX: [0, AI_FEED[0].dx], translateY: [0, AI_FEED[0].dy], opacity: [0, 1, 1, 0], duration: 520, delay: stagger(70) }, 7460)
+        .add($$(".st-ai-feed-1 .st-ai-packet"), { translateX: [0, AI_FEED[1].dx], translateY: [0, AI_FEED[1].dy], opacity: [0, 1, 1, 0], duration: 520, delay: stagger(70) }, 7560)
+        .add($$(".st-ai-feed-2 .st-ai-packet"), { translateX: [0, AI_FEED[2].dx], translateY: [0, AI_FEED[2].dy], opacity: [0, 1, 1, 0], duration: 520, delay: stagger(70) }, 7660)
+        .add($$(".st-ai-line"), { opacity: [0, 1], translateX: [10, 0], duration: 170, delay: stagger(95) }, 7760)
+
+        /* 8 · Written up as a report: the scene folds away and an A4 PDF assembles — the
+           NDVI map, its colour bar, the headline numbers and the write-up — then saves. */
+        .add($(".st-ai"), { opacity: [1, 0], duration: 250, ease: "inQuad" }, 8520)
+        .add($(".st-report"), { opacity: [0, 1], duration: 150 }, 8580)
+        .add($(".st-report-page"), { opacity: [0, 1], scale: [0.92, 1], duration: 320, ease: "outCubic" }, 8600)
+        .add($$(".st-report-el"), { opacity: [0, 1], translateY: [12, 0], duration: 240, delay: stagger(55), ease: "outQuad" }, 8940)
+        .add($(".st-report-saved"), { opacity: [0, 1], translateY: [14, 0], duration: 260, ease: "outBack" }, 9440)
         .add({ duration: HOLD }, TOTAL);
 
       if (reduced) tl.seek(tl.duration);
@@ -457,6 +529,11 @@ export default function OrbitStory() {
               <stop offset="0%" stopColor="#38bdf8" stopOpacity="0.45" />
               <stop offset="55%" stopColor="#0284c7" stopOpacity="0.15" />
               <stop offset="100%" stopColor="#0284c7" stopOpacity="0" />
+            </radialGradient>
+            <radialGradient id="st-ai-core-grad" cx="42%" cy="38%" r="70%">
+              <stop offset="0%" stopColor="#7ef0c6" />
+              <stop offset="55%" stopColor="#2ea888" />
+              <stop offset="100%" stopColor="#0c5f4e" />
             </radialGradient>
             <path id="st-wave-shape" d="M 0 -36 A 42 42 0 0 1 0 36" />
             <clipPath id="st-screen-clip">
@@ -701,6 +778,110 @@ export default function OrbitStory() {
               <rect x={60} y={60} width={660} height={84} rx={12} className="st-card" />
               <text x={84} y={96} className="st-card-title">Sentinel-2_74.3250_31.5000_2024-06-01_2024-08-31.tif</text>
               <text x={84} y={124} className="st-card-sub">Saved · NDVI · float32 GeoTIFF · EPSG:4326</text>
+            </g>
+          </g>
+
+          {/* 7 · Explained by AI */}
+          <g className="st-ai">
+            <rect x={SCREEN.x} y={SCREEN.y} width={SCREEN.w} height={SCREEN.h} rx={SCREEN.r} className="st-decoder-bg" />
+            <text className="st-panel-title" x={64} y={104}>GEE-Assist hands it to Gemini</text>
+
+            {/* input cards: metadata, area, NDVI analysis */}
+            {[
+              { title: "Metadata", lines: ["Sentinel-2 · MSI, 13 bands", "10 m · EPSG:4326", "2024-06-01 → 2024-08-31"] },
+              { title: "Area of interest", lines: ["31.60 – 31.40° N", "74.20 – 74.45° E", "≈ 690 km²"] },
+              { title: "NDVI analysis", lines: ["mean 0.52 · min −0.31 · max 0.78", "68% vegetated"], ramp: true },
+            ].map((c, i) => (
+              <g key={c.title} className={`st-ai-card st-ai-card-${i}`}>
+                <rect x={AI_CARD.x} y={AI_CARD_Y[i]} width={AI_CARD.w} height={AI_CARD.h} rx={12} className="st-card" />
+                <text className="st-card-title" x={AI_CARD.x + 22} y={AI_CARD_Y[i] + 38}>{c.title}</text>
+                {c.lines.map((ln, j) => (
+                  <text key={ln} className="st-card-sub st-ai-card-line" x={AI_CARD.x + 22} y={AI_CARD_Y[i] + 72 + j * 28}>{ln}</text>
+                ))}
+                {c.ramp && (
+                  <rect x={AI_CARD.x + 22} y={AI_CARD_Y[i] + 112} width={AI_CARD.w - 44} height={12} rx={3} fill="url(#st-ndvi-ramp)" />
+                )}
+              </g>
+            ))}
+
+            {/* feed wires and packets from each card into the core */}
+            {AI_FEED.map((f, i) => (
+              <line key={i} className="st-ai-wire" x1={f.sx + 6} y1={f.sy} x2={AI_CORE.x - AI_CORE.r} y2={AI_CORE.y} />
+            ))}
+            {AI_FEED.map((f, i) => (
+              <g key={i} className={`st-ai-feed st-ai-feed-${i}`}>
+                {Array.from({ length: 4 }).map((_, j) => (
+                  <rect key={j} className="st-ai-packet" x={f.sx + 6} y={f.sy - 5} width={16} height={10} rx={2.5} />
+                ))}
+              </g>
+            ))}
+
+            {/* the model core, thinking */}
+            <g className="st-ai-core-g" style={{ transformOrigin: `${AI_CORE.x}px ${AI_CORE.y}px` }}>
+              <circle className="st-ai-ring st-ai-ring-1" cx={AI_CORE.x} cy={AI_CORE.y} r={AI_CORE.r + 20} />
+              <circle className="st-ai-ring st-ai-ring-2" cx={AI_CORE.x} cy={AI_CORE.y} r={AI_CORE.r + 40} />
+              <circle cx={AI_CORE.x} cy={AI_CORE.y} r={AI_CORE.r} className="st-ai-core" />
+              <path className="st-ai-spark" transform={`translate(${AI_CORE.x} ${AI_CORE.y})`} d="M0 -30 L7.5 -7.5 L30 0 L7.5 7.5 L0 30 L-7.5 7.5 L-30 0 L-7.5 -7.5 Z" />
+              <path className="st-ai-spark st-ai-spark-sm" transform={`translate(${AI_CORE.x + 30} ${AI_CORE.y - 30})`} d="M0 -12 L3 -3 L12 0 L3 3 L0 12 L-3 3 L-12 0 L-3 -3 Z" />
+              <text className="st-ai-core-label" x={AI_CORE.x} y={AI_CORE.y + AI_CORE.r + 40} textAnchor="middle">Gemini</text>
+              <text className="st-ai-core-sub" x={AI_CORE.x} y={AI_CORE.y + AI_CORE.r + 66} textAnchor="middle">reading the result</text>
+            </g>
+
+            {/* the explanation it writes back */}
+            <text className="st-ai-panel-title" x={AI_PANEL_X} y={150}>Explanation</text>
+            <line className="st-ai-rule" x1={AI_PANEL_X} y1={168} x2={1136} y2={168} />
+            {AI_LINES.map((ln, i) => (
+              <text key={ln} className="st-ai-line" x={AI_PANEL_X} y={214 + i * 56}>{ln}</text>
+            ))}
+          </g>
+
+          {/* 8 · Written up as a report */}
+          <g className="st-report">
+            <rect className="st-report-shadow" x={PAGE.x + 10} y={PAGE.y + 12} width={PAGE.w} height={PAGE.h} rx={8} />
+            <g className="st-report-page" style={{ transformOrigin: `${PAGE.x + PAGE.w / 2}px ${PAGE.y + PAGE.h / 2}px` }}>
+              <rect x={PAGE.x} y={PAGE.y} width={PAGE.w} height={PAGE.h} rx={8} className="st-report-paper" />
+              <rect x={PAGE.x} y={PAGE.y} width={PAGE.w} height={14} className="st-report-accent" />
+
+              <text className="st-report-el st-report-title" x={PAGE.x + PAGE_PAD} y={PAGE.y + 74}>NDVI Analysis Report</text>
+              <text className="st-report-el st-report-sub" x={PAGE.x + PAGE_PAD} y={PAGE.y + 104}>Sentinel-2 · 74.33° E 31.50° N · Jun–Aug 2024</text>
+              <line className="st-report-el st-report-hr" x1={PAGE.x + PAGE_PAD} y1={PAGE.y + 124} x2={PAGE.x + PAGE.w - PAGE_PAD} y2={PAGE.y + 124} />
+
+              {/* the NDVI map and its colour bar */}
+              <g className="st-report-el">
+                <image href={scene.ndvi} x={PAGE.x + PAGE_PAD} y={PAGE.y + 150} width={176} height={176} style={{ imageRendering: "pixelated" }} />
+                <rect x={PAGE.x + PAGE_PAD} y={PAGE.y + 150} width={176} height={176} className="st-report-thumb-frame" />
+              </g>
+              <g className="st-report-el">
+                <rect x={PAGE.x + 244} y={PAGE.y + 164} width={214} height={14} rx={3} fill="url(#st-ndvi-ramp)" />
+                <text className="st-report-small" x={PAGE.x + 244} y={PAGE.y + 198}>−0.4</text>
+                <text className="st-report-small" x={PAGE.x + 458} y={PAGE.y + 198} textAnchor="end">0.75</text>
+                {REPORT_STATS.map(([k, v], i) => (
+                  <g key={k}>
+                    <text className="st-report-stat-k" x={PAGE.x + 244} y={PAGE.y + 228 + i * 22}>{k}</text>
+                    <text className="st-report-stat-v" x={PAGE.x + 458} y={PAGE.y + 228 + i * 22} textAnchor="end">{v}</text>
+                  </g>
+                ))}
+              </g>
+
+              {/* the explanation, set as body text */}
+              <text className="st-report-el st-report-h2" x={PAGE.x + PAGE_PAD} y={PAGE.y + 380}>Summary</text>
+              {[0, 1, 2, 3, 4].map((i) => (
+                <rect key={i} className="st-report-el st-report-line" x={PAGE.x + PAGE_PAD} y={PAGE.y + 400 + i * 26} width={i === 4 ? 300 : PAGE.w - 2 * PAGE_PAD} height={11} rx={3} />
+              ))}
+              <text className="st-report-el st-report-h2" x={PAGE.x + PAGE_PAD} y={PAGE.y + 580}>Findings</text>
+              {[0, 1, 2].map((i) => (
+                <rect key={i} className="st-report-el st-report-line" x={PAGE.x + PAGE_PAD} y={PAGE.y + 600 + i * 26} width={i === 2 ? 360 : PAGE.w - 2 * PAGE_PAD} height={11} rx={3} />
+              ))}
+
+              <line className="st-report-el st-report-hr" x1={PAGE.x + PAGE_PAD} y1={PAGE.y + PAGE.h - 46} x2={PAGE.x + PAGE.w - PAGE_PAD} y2={PAGE.y + PAGE.h - 46} />
+              <text className="st-report-el st-report-foot" x={PAGE.x + PAGE_PAD} y={PAGE.y + PAGE.h - 22}>GEE-Assist</text>
+              <text className="st-report-el st-report-foot" x={PAGE.x + PAGE.w - PAGE_PAD} y={PAGE.y + PAGE.h - 22} textAnchor="end">page 1 of 1</text>
+            </g>
+
+            <g className="st-report-saved st-card-wrap">
+              <rect x={690} y={792} width={410} height={78} rx={12} className="st-card" />
+              <text x={712} y={826} className="st-card-title">NDVI_report.pdf</text>
+              <text x={712} y={852} className="st-card-sub">Saved to the project · A4 PDF</text>
             </g>
           </g>
         </svg>
