@@ -316,8 +316,8 @@
 }
 
 :root {
-  --font-display: "Bricolage Grotesque", "IBM Plex Sans", system-ui, sans-serif;
-  --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Space Grotesk", "Inter", system-ui, sans-serif;
+  --font-body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
 
   /* The four reading levels step by the golden ratio (φ ≈ 1.618):

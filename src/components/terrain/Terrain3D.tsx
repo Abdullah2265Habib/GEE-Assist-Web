@@ -584,11 +584,11 @@ function bandLabel(b: (typeof BANDS)[number]) {
     ctx.arc(56, 56, 18, 0, Math.PI * 2);
     ctx.fill();
     ctx.fillStyle = "#ffffff";
-    ctx.font = "700 46px 'IBM Plex Sans', system-ui, sans-serif";
+    ctx.font = "700 46px 'Inter', system-ui, sans-serif";
     ctx.textBaseline = "middle";
     ctx.fillText(b.id, 92, 58);
     ctx.fillStyle = "#cfe5e0";
-    ctx.font = "500 40px 'IBM Plex Sans', system-ui, sans-serif";
+    ctx.font = "500 40px 'Inter', system-ui, sans-serif";
     ctx.fillText(`${b.name} · ${b.nm} nm`, 170, 58);
   });
   const sprite = new THREE.Sprite(
