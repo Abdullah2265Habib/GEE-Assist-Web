@@ -278,18 +278,10 @@
 }
 
 .grad-text {
-  background: linear-gradient(100deg, var(--fx-a), var(--fx-b), var(--fx-a));
-  background-size: 200% 100%;
+  background: linear-gradient(100deg, var(--fx-a), var(--fx-b));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  animation: grad-move 6s linear infinite;
-}
-
-@keyframes grad-move {
-  to {
-    background-position: -200% 0;
-  }
 }
 
 .scroll-cue {
