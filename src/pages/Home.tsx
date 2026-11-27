@@ -87,7 +87,9 @@ export default function Home() {
       <section className="hero">
         <div className="container hero-grid">
           <div className="hero-copy">
-            <h1>Satellite data, asked for in plain words.</h1>
+            <h1>
+              Satellite data, asked for in <span className="hero-accent">plain words</span>.
+            </h1>
             <p className="lede">
               GEE-Assist is a Windows app for Google Earth Engine. Describe the imagery you need, check the form it fills
               in, and get a GeoTIFF on your disk. Then analyse it on your own computer, ask Gemini what it shows and turn
