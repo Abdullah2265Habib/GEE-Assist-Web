@@ -53,6 +53,15 @@
   --fx-soft: #15302e;
 }
 
+:root[data-theme="seal-crimson"] {
+  /* Crimson pink does the buttons, glows and pulses; seal blue is the secondary. */
+  --fx-a: #e24a6e;
+  --fx-a-hover: #f06d8b;
+  --fx-b: #4fa3d1;
+  --fx-on: #ffffff;
+  --fx-soft: #163e54;
+}
+
 /* Primary buttons and links follow the same accents, so a theme looks like one palette. */
 .btn-primary {
   background: var(--fx-a);

@@ -215,6 +215,10 @@
   background: linear-gradient(135deg, #0b1020 0 38%, #3ee6a0 38% 66%, #a68bff 66% 100%);
 }
 
+.swatch-seal-crimson {
+  background: conic-gradient(from 45deg, #123a50 0 120deg, #0a1730 120deg 240deg, #e24a6e 240deg 360deg);
+}
+
 .theme-swatch[aria-checked="true"] {
   box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--ocean);
 }

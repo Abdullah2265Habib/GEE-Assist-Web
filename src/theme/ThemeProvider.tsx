@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 
-/** The three themes the desktop app offers in View → Theme, plus three website-only ones. */
-export type ThemeName = "light" | "dark-green" | "dark-grey" | "earth" | "navy" | "aurora";
+/** The three themes the desktop app offers in View → Theme, plus four website-only ones. */
+export type ThemeName = "light" | "dark-green" | "dark-grey" | "earth" | "navy" | "aurora" | "seal-crimson";
 
 export const THEMES: { name: ThemeName; label: string; icon: string; inApp: boolean }[] = [
   { name: "light", label: "Light", icon: "/media/icon-light-64.png", inApp: true },
@@ -10,6 +10,7 @@ export const THEMES: { name: ThemeName; label: string; icon: string; inApp: bool
   { name: "earth", label: "Ocean, forest & sand", icon: "/media/icon-light-64.png", inApp: false },
   { name: "navy", label: "Navy & sand", icon: "/media/icon-dark-green-64.png", inApp: false },
   { name: "aurora", label: "Aurora", icon: "/media/icon-dark-green-64.png", inApp: false },
+  { name: "seal-crimson", label: "Seal, navy & crimson", icon: "/media/icon-dark-green-64.png", inApp: false },
 ];
 
 const THEME_NAMES = THEMES.map((t) => t.name) as string[];

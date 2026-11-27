@@ -1,9 +1,10 @@
 /* Colour tokens. The names and values come from the desktop app's palette
    (frontend/palette.py in GEE-Assist) so the website and the app look like
    one product. Three themes, as in the app: light, dark blue-green, dark grey.
-   Two more are website-only: "earth" (ocean blue, forest green, desert sand)
-   "navy" (navy blue, white, desert sand) and "aurora" (polar night: midnight
-   blue with aurora green and violet). */
+   Four more are website-only: "earth" (ocean blue, forest green, desert sand),
+   "navy" (navy blue, white, desert sand), "aurora" (polar night: midnight blue
+   with aurora green and violet) and "seal-crimson" (seal blue and navy blue,
+   with crimson pink for buttons and effects). */
 
 :root {
   --surface: #ffffff;
@@ -224,6 +225,48 @@
   --terminal-muted: #7c85a6;
   --terminal-blue: #a68bff;
   --star: #ffd479;
+  color-scheme: dark;
+}
+
+/* "seal-crimson": seal blue (main) and navy blue (secondary) carry almost the
+   whole palette — surfaces, borders, text and the terminal — while crimson pink
+   is kept for the buttons, the prompt and animation effects. */
+:root[data-theme="seal-crimson"] {
+  --surface: #123a50;
+  --page: #0a1730;
+  --page-2: #0e2744;
+  --ink: #f1f6fb;
+  --text: #d4e3ef;
+  --muted: #9bb2c6;
+  --subtle: #7389a0;
+  --border: #244d66;
+  --border-strong: #356582;
+  --field: #0c2238;
+  --leaf: #e24a6e;
+  --leaf-dark: #f06d8b;
+  --ocean: #4fa3d1;
+  --ocean-dark: #7cc0e4;
+  --mint: #163e54;
+  --sky: #15314f;
+  --foam: #113246;
+  --header-green: #123a50;
+  --header-blue: #0f2a49;
+  --error: #ff8f80;
+  --error-bg: #3a2224;
+  --error-border: #6b3a37;
+  --success: #4fd0a0;
+  --success-bg: #103a34;
+  --success-border: #276755;
+  --info-bg: #122c49;
+  --info-border: #2d5075;
+  --on-primary: #ffffff;
+  --terminal-bg: #06142b;
+  --terminal-text: #d4e3ef;
+  --terminal-prompt: #f06d8b;
+  --terminal-muted: #7389a0;
+  --terminal-blue: #5fa8d6;
+  --terminal-error: #ff8f80;
+  --star: #f2a65a;
   color-scheme: dark;
 }
 
