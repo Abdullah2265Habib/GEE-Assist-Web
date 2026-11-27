@@ -33,7 +33,7 @@ function readInitialTheme(): ThemeName {
     /* storage unavailable: fall through */
   }
   if (typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches) {
-    return "dark-green";
+    return "midnight";
   }
   return "light";
 }
