@@ -42,12 +42,28 @@
   --globe-selected: #ffffff;
 }
 
-:root[data-theme="aurora"] .globe {
-  --globe-ocean: #101a38;
-  --globe-ocean-hi: #24305e;
-  --globe-land: #2b5a55;
-  --globe-land-stroke: #a68bff;
-  --globe-selected: #3ee6a0;
+:root[data-theme="midnight"] .globe {
+  --globe-ocean: #070a12;
+  --globe-ocean-hi: #15203a;
+  --globe-land: #1e3350;
+  --globe-land-stroke: #2f80ff;
+  --globe-selected: #ff9f5a;
+}
+
+:root[data-theme="seal-crimson"] .globe {
+  --globe-ocean: #0a1a30;
+  --globe-ocean-hi: #163a52;
+  --globe-land: #2a556e;
+  --globe-land-stroke: #4fa3d1;
+  --globe-selected: #e24a6e;
+}
+
+:root[data-theme="ocean-teal"] .globe {
+  --globe-ocean: #072a2b;
+  --globe-ocean-hi: #124a4a;
+  --globe-land: #1f5a54;
+  --globe-land-stroke: #3b82f6;
+  --globe-selected: #bfe825;
 }
 
 .globe-svg {

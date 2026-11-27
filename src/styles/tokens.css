@@ -2,9 +2,10 @@
    (frontend/palette.py in GEE-Assist) so the website and the app look like
    one product. Three themes, as in the app: light, dark blue-green, dark grey.
    Four more are website-only: "earth" (ocean blue, forest green, desert sand),
-   "navy" (navy blue, white, desert sand), "aurora" (polar night: midnight blue
-   with aurora green and violet) and "seal-crimson" (seal blue and navy blue,
-   with crimson pink for buttons and effects). */
+   "navy" (navy blue, white, desert sand), "midnight" (near-black midnight with
+   electric blue and cantaloupe orange), "seal-crimson" (seal blue and navy
+   blue, with crimson pink for buttons and effects) and "ocean-teal" (ocean
+   teal and court blue, with acid lime for buttons and effects). */
 
 :root {
   --surface: #ffffff;
@@ -190,41 +191,44 @@
   color-scheme: dark;
 }
 
-:root[data-theme="aurora"] {
-  --surface: #141b33;
-  --page: #0b1020;
-  --page-2: #0f1530;
-  --ink: #f2f5ff;
-  --text: #d5dcf0;
-  --muted: #a3abc8;
-  --subtle: #7c85a6;
-  --border: #252f52;
-  --border-strong: #38447a;
-  --field: #0e1429;
-  --leaf: #3ee6a0;
-  --leaf-dark: #7af0c0;
-  --ocean: #a68bff;
-  --ocean-dark: #c3b1ff;
-  --mint: #15302e;
-  --sky: #1d1d44;
-  --foam: #19213d;
-  --header-green: #12282f;
-  --header-blue: #1b1a42;
-  --error: #ff8fa3;
-  --error-bg: #3a1a2a;
-  --error-border: #6e3049;
-  --success: #3ee6a0;
-  --success-bg: #11302a;
-  --success-border: #22614d;
-  --info-bg: #1c1d45;
-  --info-border: #3b3a80;
-  --on-primary: #06140f;
-  --terminal-bg: #070a16;
-  --terminal-text: #d5dcf0;
-  --terminal-prompt: #3ee6a0;
-  --terminal-muted: #7c85a6;
-  --terminal-blue: #a68bff;
-  --star: #ffd479;
+/* "midnight": a near-black midnight base, electric blue as the primary accent
+   (buttons, prompt, glows) and cantaloupe orange as the secondary accent. */
+:root[data-theme="midnight"] {
+  --surface: #121218;
+  --page: #070709;
+  --page-2: #0d0d13;
+  --ink: #f3f5fb;
+  --text: #d2d7e3;
+  --muted: #9aa0b2;
+  --subtle: #6e7488;
+  --border: #23242e;
+  --border-strong: #363846;
+  --field: #0c0c12;
+  --leaf: #2f80ff;
+  --leaf-dark: #5a9bff;
+  --ocean: #ff9f5a;
+  --ocean-dark: #ffb77e;
+  --mint: #122235;
+  --sky: #10203a;
+  --foam: #14151c;
+  --header-green: #0f1f36;
+  --header-blue: #121019;
+  --error: #ff8f80;
+  --error-bg: #331d1d;
+  --error-border: #5c3733;
+  --success: #46d39a;
+  --success-bg: #0f2e26;
+  --success-border: #225c48;
+  --info-bg: #0f1f36;
+  --info-border: #27456e;
+  --on-primary: #06080f;
+  --terminal-bg: #050507;
+  --terminal-text: #d2d7e3;
+  --terminal-prompt: #2f80ff;
+  --terminal-muted: #6e7488;
+  --terminal-blue: #5a9bff;
+  --terminal-error: #ff8f80;
+  --star: #ff9f5a;
   color-scheme: dark;
 }
 
@@ -267,6 +271,47 @@
   --terminal-blue: #5fa8d6;
   --terminal-error: #ff8f80;
   --star: #f2a65a;
+  color-scheme: dark;
+}
+
+/* "ocean-teal": an ocean-teal base with court blue as the secondary, and acid
+   lime kept for the buttons, the prompt and animation effects. */
+:root[data-theme="ocean-teal"] {
+  --surface: #0f3b3b;
+  --page: #082a2c;
+  --page-2: #0b2f3a;
+  --ink: #eefaf7;
+  --text: #cfe6e2;
+  --muted: #93b4b0;
+  --subtle: #6d928e;
+  --border: #1c4a4a;
+  --border-strong: #2d6360;
+  --field: #0a2e30;
+  --leaf: #bfe825;
+  --leaf-dark: #d2f24d;
+  --ocean: #3b82f6;
+  --ocean-dark: #6ca4f8;
+  --mint: #11403f;
+  --sky: #123a52;
+  --foam: #0e3537;
+  --header-green: #0f3b3b;
+  --header-blue: #103049;
+  --error: #ff8f80;
+  --error-bg: #3a2222;
+  --error-border: #6b3a37;
+  --success: #5fd3a8;
+  --success-bg: #0f3630;
+  --success-border: #256b57;
+  --info-bg: #102f49;
+  --info-border: #27507a;
+  --on-primary: #0d1a00;
+  --terminal-bg: #04201f;
+  --terminal-text: #cfe6e2;
+  --terminal-prompt: #bfe825;
+  --terminal-muted: #6d928e;
+  --terminal-blue: #3b82f6;
+  --terminal-error: #ff8f80;
+  --star: #bfe825;
   color-scheme: dark;
 }
 

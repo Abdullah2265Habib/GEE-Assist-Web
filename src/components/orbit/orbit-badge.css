@@ -60,15 +60,37 @@
   --ob-star: #ffffff;
 }
 
-:root[data-theme="aurora"] .orbit-badge {
-  --ob-ocean: #101a38;
-  --ob-ocean-hi: #2c3a72;
-  --ob-land: #2f7a68;
-  --ob-land-edge: #a68bff;
-  --ob-glow: #3ee6a0;
-  --ob-orbit: #a68bff;
-  --ob-beam: #3ee6a0;
+:root[data-theme="midnight"] .orbit-badge {
+  --ob-ocean: #070a12;
+  --ob-ocean-hi: #16213c;
+  --ob-land: #1f3a58;
+  --ob-land-edge: #2f80ff;
+  --ob-glow: #2f80ff;
+  --ob-orbit: #ff9f5a;
+  --ob-beam: #ff9f5a;
   --ob-star: #e9eeff;
+}
+
+:root[data-theme="seal-crimson"] .orbit-badge {
+  --ob-ocean: #0a1a30;
+  --ob-ocean-hi: #184063;
+  --ob-land: #2c5f7e;
+  --ob-land-edge: #4fa3d1;
+  --ob-glow: #4fa3d1;
+  --ob-orbit: #e24a6e;
+  --ob-beam: #e24a6e;
+  --ob-star: #eaf2fb;
+}
+
+:root[data-theme="ocean-teal"] .orbit-badge {
+  --ob-ocean: #072a2b;
+  --ob-ocean-hi: #135353;
+  --ob-land: #2a7d6a;
+  --ob-land-edge: #3b82f6;
+  --ob-glow: #3b82f6;
+  --ob-orbit: #bfe825;
+  --ob-beam: #bfe825;
+  --ob-star: #eafaf3;
 }
 
 .ob-stars circle {

@@ -45,12 +45,13 @@
   --fx-soft: #1a3056;
 }
 
-:root[data-theme="aurora"] {
-  --fx-a: #3ee6a0;
-  --fx-a-hover: #7af0c0;
-  --fx-b: #a68bff;
-  --fx-on: #06140f;
-  --fx-soft: #15302e;
+:root[data-theme="midnight"] {
+  /* Electric blue does the buttons, glows and pulses; cantaloupe orange is the secondary. */
+  --fx-a: #2f80ff;
+  --fx-a-hover: #5a9bff;
+  --fx-b: #ff9f5a;
+  --fx-on: #06080f;
+  --fx-soft: #122235;
 }
 
 :root[data-theme="seal-crimson"] {
@@ -60,6 +61,15 @@
   --fx-b: #4fa3d1;
   --fx-on: #ffffff;
   --fx-soft: #163e54;
+}
+
+:root[data-theme="ocean-teal"] {
+  /* Acid lime does the buttons, glows and pulses; court blue is the secondary. */
+  --fx-a: #bfe825;
+  --fx-a-hover: #d2f24d;
+  --fx-b: #3b82f6;
+  --fx-on: #0d1a00;
+  --fx-soft: #11403f;
 }
 
 /* Primary buttons and links follow the same accents, so a theme looks like one palette. */
