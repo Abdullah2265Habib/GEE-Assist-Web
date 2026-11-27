@@ -5,7 +5,7 @@ import OrbitBadge from "../components/orbit/OrbitBadge";
 const STACK: [string, string][] = [
   ["Desktop app", "Python, PyQt6 and Qt WebEngine for the map"],
   ["Earth Engine", "earthengine-api, rasterio and NumPy for chunking and merging GeoTIFFs"],
-  ["Language", "Google Gemini, with spaCy for recognising places, dates and datasets"],
+  ["Language", "AI, with spaCy for recognising places, dates and datasets"],
   ["Account server", "FastAPI, MongoDB, JWT tokens, Argon2id password hashing"],
   ["This website", "React and TypeScript, built with Vite"],
 ];
@@ -55,7 +55,7 @@ export default function About() {
 
         <section>
           <h2>How the pieces fit</h2>
-          <div className="arch" role="img" aria-label="The desktop app talks to the account server for sign-in, to Gemini to understand requests, and to Google Earth Engine for imagery. This website talks only to the account server.">
+          <div className="arch" role="img" aria-label="The desktop app talks to the account server for sign-in, to the AI to understand requests, and to Google Earth Engine for imagery. This website talks only to the account server.">
             <div className="arch-node arch-main">
               <strong>GEE-Assist desktop app</strong>
               <span>on your computer</span>
@@ -66,7 +66,7 @@ export default function About() {
                 <span>sign-in, ratings, feedback</span>
               </div>
               <div className="arch-node">
-                <strong>Google Gemini</strong>
+                <strong>AI</strong>
                 <span>reads your request</span>
               </div>
               <div className="arch-node">

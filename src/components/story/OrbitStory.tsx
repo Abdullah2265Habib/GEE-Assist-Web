@@ -29,7 +29,7 @@ const CHAPTERS = [
   },
   {
     title: "Decoded into bands",
-    body: "The pieces join into one image, and the bands come apart: red, green, blue and near-infrared. Pick the bands you need, or let Gemini pick them from your request.",
+    body: "The pieces join into one image, and the bands come apart: red, green, blue and near-infrared. Pick the bands you need, or let the AI pick them from your request.",
   },
   {
     title: "Turned into answers",
@@ -37,11 +37,11 @@ const CHAPTERS = [
   },
   {
     title: "Explained by AI",
-    body: "GEE-Assist hands Gemini the result, a picture of every layer and all the metadata — dataset, area and the NDVI analysis. It reads them and writes back what the scene shows, in plain words.",
+    body: "GEE-Assist hands the AI the result, a picture of every layer and all the metadata — dataset, area and the NDVI analysis. It reads them and writes back what the scene shows, in plain words.",
   },
   {
     title: "Written up as a report",
-    body: "The NDVI analysis and Gemini's explanation are laid out as an A4 PDF: the map, its colour bar, the headline numbers and the write-up. One click saves it into the project.",
+    body: "The NDVI analysis and the AI's explanation are laid out as an A4 PDF: the map, its colour bar, the headline numbers and the write-up. One click saves it into the project.",
   },
 ];
 
@@ -422,7 +422,7 @@ export default function OrbitStory() {
         .add($$(".st-map-late"), { opacity: [0, 1], translateY: [10, 0], duration: 250, delay: stagger(60) }, 6300)
 
         /* 7 · Explained by AI: the map and result dissolve, the metadata, area and NDVI
-           analysis stack up as cards, stream into Gemini, which thinks and writes an
+           analysis stack up as cards, stream into the AI, which thinks and writes an
            explanation line by line. */
         .add($$(".st-map, .st-decoder"), { opacity: [1, 0], duration: 220, ease: "inQuad" }, 6900)
         .add($$(".st-map-late"), { opacity: [1, 0], duration: 180, ease: "inQuad" }, 6900)
@@ -784,7 +784,7 @@ export default function OrbitStory() {
           {/* 7 · Explained by AI */}
           <g className="st-ai">
             <rect x={SCREEN.x} y={SCREEN.y} width={SCREEN.w} height={SCREEN.h} rx={SCREEN.r} className="st-decoder-bg" />
-            <text className="st-panel-title" x={64} y={104}>GEE-Assist hands it to Gemini</text>
+            <text className="st-panel-title" x={64} y={104}>GEE-Assist hands it to the AI</text>
 
             {/* input cards: metadata, area, NDVI analysis */}
             {[
@@ -823,7 +823,7 @@ export default function OrbitStory() {
               <circle cx={AI_CORE.x} cy={AI_CORE.y} r={AI_CORE.r} className="st-ai-core" />
               <path className="st-ai-spark" transform={`translate(${AI_CORE.x} ${AI_CORE.y})`} d="M0 -30 L7.5 -7.5 L30 0 L7.5 7.5 L0 30 L-7.5 7.5 L-30 0 L-7.5 -7.5 Z" />
               <path className="st-ai-spark st-ai-spark-sm" transform={`translate(${AI_CORE.x + 30} ${AI_CORE.y - 30})`} d="M0 -12 L3 -3 L12 0 L3 3 L0 12 L-3 3 L-12 0 L-3 -3 Z" />
-              <text className="st-ai-core-label" x={AI_CORE.x} y={AI_CORE.y + AI_CORE.r + 40} textAnchor="middle">Gemini</text>
+              <text className="st-ai-core-label" x={AI_CORE.x} y={AI_CORE.y + AI_CORE.r + 40} textAnchor="middle">AI</text>
               <text className="st-ai-core-sub" x={AI_CORE.x} y={AI_CORE.y + AI_CORE.r + 66} textAnchor="middle">reading the result</text>
             </g>
 

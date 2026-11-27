@@ -313,7 +313,7 @@ export function run(session: Session, raw: string): RunResult {
         lines: [
           L("ok", "✓ Authentication server   http://localhost:8000 (12 ms)"),
           L("ok", "✓ Session                 valid, renews in 27 min"),
-          L("ok", "✓ Gemini                  GEMINI_API_KEY set, model answers"),
+          L("ok", "✓ AI                      GEMINI_API_KEY set, model answers"),
           L("ok", "✓ Download folder         D:\\GEE-Assist\\workspace\\downloads (210 GB free)"),
           L("ok", "✓ Earth Engine            project gee-assist-demo, signed in"),
           L("out", "Everything is ready."),
@@ -364,7 +364,7 @@ export function run(session: Session, raw: string): RunResult {
         null;
       if (analysis && ds?.analyses.includes(analysis.type as never)) f.analysis = analysis;
       const lines: Line[] = [
-        L("muted", "Gemini is reading your request…"),
+        L("muted", "The AI is reading your request…"),
         L("out", "Recognised:"),
         ...(place ? [L("out", `  PLACE     ${place.name}`)] : []),
         L("out", `  DATE      ${f.start} → ${f.end}`),

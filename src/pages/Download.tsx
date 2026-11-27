@@ -23,8 +23,8 @@ const FAQ: [string, string][] = [
     "Finished chunks are kept. Press Start on the Downloads page and it continues where it stopped, even after restarting the app. Failed chunks are retried three times automatically.",
   ],
   [
-    "What do I need for “Chat with Gemini”?",
-    "A Gemini API key from Google AI Studio, set as GEMINI_API_KEY in the app's .env file. Without it, the parameter form and terminal still work.",
+    "What do I need for “Chat with AI”?",
+    "An AI API key from Google AI Studio, set as GEMINI_API_KEY in the app's .env file. Without it, the parameter form and terminal still work.",
   ],
 ];
 
@@ -63,7 +63,7 @@ export default function Download() {
           <ul className="check-list">
             <li>Windows 10 or 11, 64-bit</li>
             <li>A Google account, and a Google Cloud project registered for Earth Engine</li>
-            <li>Optional: a Gemini API key for plain-language requests</li>
+            <li>Optional: an AI API key for plain-language requests</li>
             <li>Free disk space for your downloads. A year of Sentinel-2 over a city is usually tens to hundreds of megabytes</li>
           </ul>
         </section>

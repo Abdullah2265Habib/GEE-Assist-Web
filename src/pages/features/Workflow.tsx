@@ -7,8 +7,8 @@ const FLOW = [
     icon: "key",
     title: "Your own keys",
     name: "Your own keys",
-    short: ["Earth Engine ID and", "Gemini key, kept safe"],
-    body: "The first sign-in asks for your Earth Engine project ID and a Gemini API key, with the steps to get both. The key is kept in Windows Credential Manager, never in a file.",
+    short: ["Earth Engine ID and", "AI key, kept safe"],
+    body: "The first sign-in asks for your Earth Engine project ID and an AI API key, with the steps to get both. The key is kept in Windows Credential Manager, never in a file.",
   },
   {
     icon: "folder",
@@ -42,8 +42,8 @@ const FLOW = [
     icon: "spark",
     title: "Explain with AI",
     name: "AI explanation",
-    short: ["Gemini explains", "the result for you"],
-    body: "Gemini is sent the result GeoTIFF, a preview of each layer and all the metadata, and writes an explanation that is kept in the project.",
+    short: ["AI explains", "the result for you"],
+    body: "The AI is sent the result GeoTIFF, a preview of each layer and all the metadata, and writes an explanation that is kept in the project.",
   },
   {
     icon: "pdf",
@@ -228,7 +228,7 @@ export function WorkflowChapter() {
             From a download tool to a <span className="grad-text">full workflow</span>
           </>
         }
-        lede="GEE-Assist now keeps your work in projects, runs four analyses on what you download, shows the result in a proper viewer, asks Gemini to explain it and writes the explanation up as a PDF report."
+        lede="GEE-Assist now keeps your work in projects, runs four analyses on what you download, shows the result in a proper viewer, asks the AI to explain it and writes the explanation up as a PDF report."
         art={<OrbitArt />}
       >
         <dl className="new-stats">

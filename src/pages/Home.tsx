@@ -52,7 +52,7 @@ function AreaReadout({ area }: { area: SelectedArea | null }) {
 const STEPS = [
   {
     title: "Describe what you need",
-    body: "Write a request such as “NDVI of Lahore for summer 2024 from Sentinel-2”. Gemini, together with GEE-Assist's own recogniser for places, dates, datasets and analyses, fills the parameter form. If the request is unclear, it asks you a question instead of guessing.",
+    body: "Write a request such as “NDVI of Lahore for summer 2024 from Sentinel-2”. The AI, together with GEE-Assist's own recogniser for places, dates, datasets and analyses, fills the parameter form. If the request is unclear, it asks you a question instead of guessing.",
   },
   {
     title: "Check the parameter form",
@@ -67,8 +67,8 @@ const STEPS = [
     body: "Choose water, vegetation, land surface temperature or land cover, and the processes the dataset can run. It runs on your NVIDIA GPU when there is one, otherwise on the CPU, and the result is saved only when you ask.",
   },
   {
-    title: "Ask Gemini to explain it",
-    body: "Gemini is sent the result GeoTIFF, a picture of every layer and all the metadata, and explains the result in plain words. The explanation is kept in the project.",
+    title: "Ask the AI to explain it",
+    body: "The AI is sent the result GeoTIFF, a picture of every layer and all the metadata, and explains the result in plain words. The explanation is kept in the project.",
   },
   {
     title: "Hand in a PDF report",
@@ -92,7 +92,7 @@ export default function Home() {
             </h1>
             <p className="lede">
               GEE-Assist is a Windows app for Google Earth Engine. Describe the imagery you need, check the form it fills
-              in, and get a GeoTIFF on your disk. Then analyse it on your own computer, ask Gemini what it shows and turn
+              in, and get a GeoTIFF on your disk. Then analyse it on your own computer, ask the AI what it shows and turn
               the answer into a PDF report. No code editor and no scripts.
             </p>
             <div className="btn-row">
@@ -243,7 +243,7 @@ export default function Home() {
 
       <NewStrip
         title="Everything the app does now"
-        intro="A GeoTIFF viewer, AI explanations from Gemini and PDF reports. Each has its own chapter on the Features page."
+        intro="A GeoTIFF viewer, AI explanations and PDF reports. Each has its own chapter on the Features page."
       />
 
       <section className="section cta">

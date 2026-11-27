@@ -85,7 +85,7 @@ const PAGES = [
   },
   {
     t: "Then the explanation",
-    d: "Headed “Summary”, with its headings and lists, exactly as Gemini wrote it.",
+    d: "Headed “Summary”, with its headings and lists, exactly as the AI wrote it.",
     el: <Page2 />,
   },
   {

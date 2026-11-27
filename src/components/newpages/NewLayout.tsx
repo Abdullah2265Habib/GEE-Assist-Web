@@ -14,7 +14,7 @@ export const FEATURE_CHAPTERS = [
   {
     id: "ai-explanation",
     label: "AI explanation",
-    blurb: "Gemini reads the result GeoTIFF, its previews and metadata, and explains it in plain words.",
+    blurb: "The AI reads the result GeoTIFF, its previews and metadata, and explains it in plain words.",
   },
   {
     id: "reports",

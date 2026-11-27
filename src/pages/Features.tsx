@@ -72,9 +72,9 @@ export default function Features() {
           <section id="query">
             <h2>Asking in plain words</h2>
             <p>
-              The Query Input page has a <strong>Chat with Gemini</strong> assistant. Write what you need the way you would
+              The Query Input page has a <strong>Chat with AI</strong> assistant. Write what you need the way you would
               say it to a colleague: a place, a time, what you want to measure. GEE-Assist first runs its own recogniser
-              over the text and tags places, dates, datasets, analyses and band names. Gemini then uses those tags to fill
+              over the text and tags places, dates, datasets, analyses and band names. The AI then uses those tags to fill
               the parameter form.
             </p>
             <figure className="example">
@@ -86,13 +86,13 @@ export default function Features() {
             </figure>
             <p>
               Anything it could not take from the request is listed in notes under the form. If the request is ambiguous,
-              Gemini asks a question rather than filling the form with a guess.
+              the AI asks a question rather than filling the form with a guess.
             </p>
           </section>
 
           <section id="form">
             <h2>The parameter form</h2>
-            <p>Whether you type, ask Gemini or use the terminal, every request ends up on the same form:</p>
+            <p>Whether you type, ask the AI or use the terminal, every request ends up on the same form:</p>
             <dl className="def-list">
               <dt>Dataset and bands</dt>
               <dd>Choosing a dataset sets its default bands, pixel size, cloud cover and composite. You can change any of them.</dd>

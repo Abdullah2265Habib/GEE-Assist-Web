@@ -3,7 +3,7 @@ import { Reveal, useInView, useTypewriter } from "../../components/motion/motion
 import { Chapter, SectionHead } from "../../components/newpages/NewLayout";
 import { viewUrl } from "../../components/raster/scene";
 
-/** Hero picture: the three inputs flowing into Gemini, and an explanation coming out. */
+/** Hero picture: the three inputs flowing into the AI, and an explanation coming out. */
 function FlowArt() {
   const inputs = [
     { y: 70, label: "Result GeoTIFF" },
@@ -12,7 +12,7 @@ function FlowArt() {
   ];
   return (
     <div className="ai-art">
-      <svg viewBox="0 0 420 300" role="img" aria-label="The GeoTIFF, previews and metadata go to Gemini, which returns an explanation">
+      <svg viewBox="0 0 420 300" role="img" aria-label="The GeoTIFF, previews and metadata go to the AI, which returns an explanation">
         <defs>
           <linearGradient id="ai-grad" x1="0" x2="1">
             <stop offset="0" stopColor="var(--fx-b)" />
@@ -219,17 +219,17 @@ export function AiExplanationChapter() {
         eyebrow="AI explanation"
         title={
           <>
-            Ask Gemini <span className="grad-text">what the result means</span>
+            Ask the AI <span className="grad-text">what the result means</span>
           </>
         }
-        lede="Gemini is sent the result GeoTIFF itself, a picture of every layer, and everything the app knows about the analysis and the data. It answers in plain words, and the answer is kept in your project."
+        lede="The AI is sent the result GeoTIFF itself, a picture of every layer, and everything the app knows about the analysis and the data. It answers in plain words, and the answer is kept in your project."
         art={<FlowArt />}
       />
 
       <section className="section band-soft">
         <div className="container">
-          <SectionHead title="What Gemini sees, and what it says">
-            On the left the page shows exactly what Gemini is sent; the explanation appears on the right.
+          <SectionHead title="What the AI sees, and what it says">
+            On the left the page shows exactly what the AI is sent; the explanation appears on the right.
           </SectionHead>
           <ExplanationPage />
         </div>

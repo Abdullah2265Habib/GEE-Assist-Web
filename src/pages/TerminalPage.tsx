@@ -5,7 +5,7 @@ const GROUPS: { name: string; commands: [string, string][] }[] = [
   {
     name: "Parameters",
     commands: [
-      ["ask TEXT", "Describe the data in plain words and let Gemini fill the form"],
+      ["ask TEXT", "Describe the data in plain words and let the AI fill the form"],
       ["form show", "Show every field of the parameter form"],
       ["form set FIELD VALUE", "Set dataset, bands, scale, cloud, composite, dates, crs or analysis"],
       ["form aoi bbox W S E N", "Use a rectangle as the area"],
@@ -30,7 +30,7 @@ const GROUPS: { name: string; commands: [string, string][] }[] = [
       ["gee status", "Whether Earth Engine can be used right now"],
       ["gee verify", "Check the set-up step by step, with fixes"],
       ["gee login", "Sign in to Earth Engine in the browser"],
-      ["doctor", "Check the server, session, Gemini, folder and Earth Engine"],
+      ["doctor", "Check the server, session, AI, folder and Earth Engine"],
     ],
   },
   {
