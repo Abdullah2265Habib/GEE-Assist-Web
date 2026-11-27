@@ -320,13 +320,20 @@
   --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
 
+  /* The four reading levels step by the golden ratio (φ ≈ 1.618):
+       paragraph (--text-md, ×1) → subheading (--text-xl, ×φ)
+       → heading (--text-2xl, ×φ²) → headline (--text-hero, ×φ³).
+     Each level is φ times the one below it. The base (paragraph) is fluid, and
+     every heading is a calc() multiple of it, so the ratio holds at any width.
+     --text-xs/-sm are small UI type and sit outside the heading scale. */
+  --ratio: 1.618;
   --text-xs: 0.8125rem;
   --text-sm: 0.9rem;
-  --text-md: 1.0625rem;
-  --text-lg: 1.25rem;
-  --text-xl: 1.6rem;
-  --text-2xl: clamp(2rem, 1.4rem + 2.4vw, 3rem);
-  --text-hero: clamp(2.6rem, 1.6rem + 4.6vw, 5rem);
+  --text-md: clamp(1rem, 0.95rem + 0.25vw, 1.0625rem);
+  --text-lg: calc(var(--text-md) * 1.272); /* √φ: a half-step, for h4 */
+  --text-xl: calc(var(--text-md) * var(--ratio));
+  --text-2xl: calc(var(--text-xl) * var(--ratio));
+  --text-hero: calc(var(--text-2xl) * var(--ratio));
 
   --measure: 62ch;
   --content: 1120px;
