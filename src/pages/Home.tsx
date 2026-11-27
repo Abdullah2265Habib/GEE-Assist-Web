@@ -88,7 +88,7 @@ export default function Home() {
         <div className="container hero-grid">
           <div className="hero-copy">
             <h1>
-              Satellite data, asked for in <span className="hero-accent">plain words</span>.
+              Satellite data, asked for in <span className="grad-text">plain words</span>.
             </h1>
             <p className="lede">
               GEE-Assist is a Windows app for Google Earth Engine. Describe the imagery you need, check the form it fills
