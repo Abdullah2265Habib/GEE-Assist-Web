@@ -93,6 +93,12 @@ main:focus {
   margin-bottom: 0.35em;
 }
 
+/* Emphasis in the headline, in the same accent the primary button uses,
+   so it follows whichever theme is active. */
+.hero-accent {
+  color: var(--leaf);
+}
+
 .hero-copy .lede {
   margin-bottom: 1.6em;
 }
